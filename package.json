@@ -1,0 +1,29 @@
+{
+  "name": "coach",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HIIT Fitness App monorepo (RN app + Next.js CMS + Spring Boot API)",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r --parallel --if-present test",
+    "types:build": "pnpm --filter @coach/shared-types build",
+    "cms-web:dev": "pnpm --filter @coach/cms-web dev",
+    "cms-web:typecheck": "pnpm --filter @coach/cms-web typecheck",
+    "app:start": "pnpm --filter @coach/app start",
+    "app:test": "pnpm --filter @coach/app test",
+    "app:typecheck": "pnpm --filter @coach/app typecheck",
+    "cms-api:run": "cd cms-api && ./mvnw spring-boot:run",
+    "cms-api:build": "cd cms-api && ./mvnw -DskipTests package",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

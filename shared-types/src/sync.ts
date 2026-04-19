@@ -1,0 +1,19 @@
+import type { Exercise } from './exercise';
+import type { Workout } from './workout';
+
+export interface SyncRequest {
+  since: number;
+}
+
+export interface SyncResponse {
+  serverTime: number;
+  exercises: {
+    updated: Exercise[];
+    deleted: string[];
+  };
+  workouts: {
+    updated: Workout[];
+    deleted: string[];
+  };
+  hasMore: boolean;
+}
