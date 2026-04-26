@@ -23,6 +23,19 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+coach:
+  jwt:
+    # dev-only default; override via COACH_JWT_SECRET in prod (≥32 bytes base64url or raw)
+    secret: ${COACH_JWT_SECRET:dev-only-jwt-secret-change-in-prod-please-use-at-least-32-bytes}
+    access-token-ttl-seconds: ${COACH_JWT_TTL:3600}
+    issuer: coach-cms
+  seed:
+    # Creates an initial admin user if cms_users table is empty (dev only)
+    admin-email: ${COACH_SEED_ADMIN_EMAIL:admin@coach.local}
+    admin-password: ${COACH_SEED_ADMIN_PASSWORD:admin123}
+    admin-name: ${COACH_SEED_ADMIN_NAME:Initial Admin}
+    enabled: ${COACH_SEED_ENABLED:true}
+
 server:
   port: ${CMS_API_PORT:8080}
   error:
