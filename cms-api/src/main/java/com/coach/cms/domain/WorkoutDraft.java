@@ -47,7 +47,6 @@ public class WorkoutDraft {
     @Column(name = "cover_image_url", length = 500)
     private String coverImageUrl;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Difficulty difficulty;
 
@@ -86,7 +85,7 @@ public class WorkoutDraft {
     private Instant updatedAt;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "workout_draft_id")
+    @JoinColumn(name = "workout_draft_id", nullable = false)
     @OrderBy("orderIndex ASC")
     @Builder.Default
     private List<WorkoutDraftSegment> segments = new ArrayList<>();
