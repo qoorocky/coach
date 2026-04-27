@@ -28,6 +28,12 @@ coach:
     secret: ${COACH_JWT_SECRET:dev-only-jwt-secret-change-in-prod-please-use-at-least-32-bytes}
     access-token-ttl-seconds: ${COACH_JWT_TTL:3600}
     issuer: coach-cms
+    cookie-name: ${COACH_JWT_COOKIE_NAME:coach_jwt}
+    # set true in prod (HTTPS); false in local HTTP dev
+    cookie-secure: ${COACH_JWT_COOKIE_SECURE:false}
+    cookie-same-site: ${COACH_JWT_COOKIE_SAME_SITE:Lax}
+  cors:
+    allowed-origins: ${COACH_CORS_ALLOWED_ORIGINS:http://localhost:3100}
   seed:
     # Creates an initial admin user if cms_users table is empty (dev only)
     admin-email: ${COACH_SEED_ADMIN_EMAIL:admin@coach.local}
