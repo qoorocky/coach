@@ -60,6 +60,10 @@ docker-data/
 minio-data/
 postgres-data/
 
+# Local uploads (cms-api LocalFileStorage)
+uploads/
+cms-api/uploads/
+
 # Coverage
 coverage/
 .nyc_output/

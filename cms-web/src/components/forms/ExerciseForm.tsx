@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChipGroup } from "@/components/ui/chip-group";
+import { FileUploadField } from "@/components/forms/FileUploadField";
 
 import {
   exerciseFormSchema,
@@ -229,12 +230,18 @@ export function ExerciseForm({
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="videoUrl">影片 URL</Label>
-        <Input
-          id="videoUrl"
-          type="url"
-          {...form.register("videoUrl")}
+        <Label>影片</Label>
+        <FileUploadField
+          kind="video"
+          value={form.watch("videoUrl")}
+          onChange={(url, meta) => {
+            form.setValue("videoUrl", url ?? "", { shouldDirty: true });
+            form.setValue("videoSizeBytes", meta ? String(meta.sizeBytes) : "", {
+              shouldDirty: true,
+            });
+          }}
           disabled={pending}
+          maxLabel="支援 mp4 / webm / mov，最大 100 MB"
         />
         {form.formState.errors.videoUrl && (
           <p className="text-destructive text-sm">{form.formState.errors.videoUrl.message}</p>
@@ -242,22 +249,15 @@ export function ExerciseForm({
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="videoSizeBytes">影片大小 (bytes)</Label>
-        <Input
-          id="videoSizeBytes"
-          type="number"
-          {...form.register("videoSizeBytes")}
+        <Label>縮圖</Label>
+        <FileUploadField
+          kind="image"
+          value={form.watch("thumbnailUrl")}
+          onChange={(url) =>
+            form.setValue("thumbnailUrl", url ?? "", { shouldDirty: true })
+          }
           disabled={pending}
-        />
-      </div>
-
-      <div className="grid gap-1.5">
-        <Label htmlFor="thumbnailUrl">縮圖 URL</Label>
-        <Input
-          id="thumbnailUrl"
-          type="url"
-          {...form.register("thumbnailUrl")}
-          disabled={pending}
+          maxLabel="支援 png / jpeg / webp / gif，最大 10 MB"
         />
         {form.formState.errors.thumbnailUrl && (
           <p className="text-destructive text-sm">

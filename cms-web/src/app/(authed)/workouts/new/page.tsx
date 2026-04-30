@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { WorkoutForm } from "@/components/forms/WorkoutForm";
+import { BackLink } from "@/components/nav/BackLink";
 import { useCreateWorkout } from "@/lib/queries/workouts";
 
 export default function NewWorkoutPage() {
@@ -12,6 +13,7 @@ export default function NewWorkoutPage() {
 
   return (
     <div className="space-y-4">
+      <BackLink href="/workouts" />
       <div>
         <h1 className="text-2xl font-semibold">新增課程</h1>
         <p className="text-sm text-muted-foreground">

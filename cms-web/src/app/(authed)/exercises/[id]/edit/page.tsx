@@ -6,8 +6,7 @@ import { toast } from "sonner";
 
 import { ExerciseForm } from "@/components/forms/ExerciseForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { BackLink } from "@/components/nav/BackLink";
 
 import { useExercise, useUpdateExercise } from "@/lib/queries/exercises";
 
@@ -32,34 +31,31 @@ export default function EditExercisePage({ params }: Props) {
 
   if (error || !data) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
+        <BackLink href="/exercises" />
         <h1 className="text-xl font-semibold">找不到動作</h1>
         <p className="text-sm text-muted-foreground">
           {error ? (error as Error).message : "資料不存在"}
         </p>
-        <Button variant="outline" render={<Link href="/exercises" />}>
-          回列表
-        </Button>
       </div>
     );
   }
 
   if (data.status !== "DRAFT") {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
+        <BackLink href="/exercises" />
         <h1 className="text-xl font-semibold">無法編輯</h1>
         <p className="text-sm text-muted-foreground">
           只有草稿狀態可以編輯，目前狀態為 {data.status}。
         </p>
-        <Button variant="outline" render={<Link href={`/exercises/${id}`} />}>
-          返回
-        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <BackLink href="/exercises" />
       <div>
         <h1 className="text-2xl font-semibold">編輯動作</h1>
         <p className="text-sm text-muted-foreground">{data.nameZh}</p>
@@ -68,7 +64,7 @@ export default function EditExercisePage({ params }: Props) {
         initial={data}
         submitLabel="儲存變更"
         pending={update.isPending}
-        onCancel={() => router.push(`/exercises/${id}`)}
+        onCancel={() => router.push("/exercises")}
         onSubmit={(req) =>
           update.mutate(req, {
             onSuccess: () => {

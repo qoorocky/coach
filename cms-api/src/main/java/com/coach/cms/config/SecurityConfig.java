@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class, StorageProperties.class})
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/info", "/ping").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
                 .requestMatchers("/api/v1/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
                 .requestMatchers("/api/auth/me").authenticated()
                 .requestMatchers("/api/cms/**").authenticated()
                 .anyRequest().denyAll()

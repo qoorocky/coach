@@ -6,6 +6,7 @@ import { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { BackLink } from "@/components/nav/BackLink";
 import { StatusBadge } from "@/components/lifecycle/StatusBadge";
 import { WorkoutLifecycleActions } from "@/components/lifecycle/WorkoutLifecycleActions";
 
@@ -43,14 +44,12 @@ export default function WorkoutDetailPage({ params }: Props) {
 
   if (error || !data) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
+        <BackLink href="/workouts" />
         <h1 className="text-xl font-semibold">找不到課程</h1>
         <p className="text-sm text-muted-foreground">
           {error ? (error as Error).message : "資料不存在"}
         </p>
-        <Button variant="outline" render={<Link href="/workouts" />}>
-          回列表
-        </Button>
       </div>
     );
   }
@@ -61,6 +60,8 @@ export default function WorkoutDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <BackLink href="/workouts" />
+
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -142,14 +143,11 @@ export default function WorkoutDetailPage({ params }: Props) {
       {data.coverImageUrl && (
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">封面圖</p>
-          <a
-            href={data.coverImageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline break-all"
-          >
-            {data.coverImageUrl}
-          </a>
+          <img
+            src={data.coverImageUrl}
+            alt="封面"
+            className="w-full max-w-md rounded-md border bg-muted object-cover"
+          />
         </div>
       )}
     </div>

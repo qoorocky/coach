@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChipGroup } from "@/components/ui/chip-group";
+import { FileUploadField } from "@/components/forms/FileUploadField";
 
 import {
   toWorkoutUpsertRequest,
@@ -167,12 +168,15 @@ export function WorkoutForm({
       />
 
       <div className="grid gap-1.5">
-        <Label htmlFor="coverImageUrl">封面圖 URL</Label>
-        <Input
-          id="coverImageUrl"
-          type="url"
-          {...form.register("coverImageUrl")}
+        <Label>封面圖</Label>
+        <FileUploadField
+          kind="image"
+          value={form.watch("coverImageUrl")}
+          onChange={(url) =>
+            form.setValue("coverImageUrl", url ?? "", { shouldDirty: true })
+          }
           disabled={pending}
+          maxLabel="支援 png / jpeg / webp / gif，最大 10 MB"
         />
         {form.formState.errors.coverImageUrl && (
           <p className="text-destructive text-sm">
