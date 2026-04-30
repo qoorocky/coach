@@ -16,12 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import {
   segmentSchema,
   toSegmentUpsertRequest,
@@ -29,6 +30,12 @@ import {
   type SegmentUpsertRequest,
 } from "@/lib/schemas/workout";
 import type { ExerciseDraft, WorkoutSegment } from "@/lib/domain/types";
+
+interface ExerciseItem {
+  value: string;
+  label: string;
+  searchText: string;
+}
 
 interface Props {
   open: boolean;
@@ -75,7 +82,11 @@ export function SegmentDialog({
     }
   }, [open, initial, exercises, form]);
 
-  const exerciseItems = exercises.map((ex) => ({ value: ex.id, label: ex.nameZh }));
+  const exerciseItems: ExerciseItem[] = exercises.map((ex) => ({
+    value: ex.id,
+    label: ex.nameZh,
+    searchText: `${ex.nameZh} ${ex.nameEn}`.toLowerCase(),
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,25 +108,32 @@ export function SegmentDialog({
         >
           <div className="grid gap-1.5">
             <Label>動作 *</Label>
-            <Select
+            <Combobox<ExerciseItem>
               items={exerciseItems}
-              value={form.watch("exerciseId")}
+              value={
+                exerciseItems.find((it) => it.value === form.watch("exerciseId")) ?? null
+              }
               onValueChange={(v) =>
-                form.setValue("exerciseId", v ?? "", { shouldDirty: true })
+                form.setValue("exerciseId", v?.value ?? "", { shouldDirty: true })
+              }
+              isItemEqualToValue={(a, b) => a.value === b.value}
+              filter={(item, query) =>
+                item.searchText.includes(query.toLowerCase())
               }
               disabled={pending || exercises.length === 0}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="選擇動作" />
-              </SelectTrigger>
-              <SelectContent>
-                {exercises.map((ex) => (
-                  <SelectItem key={ex.id} value={ex.id}>
-                    {ex.nameZh}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <ComboboxInput placeholder="搜尋動作..." />
+              <ComboboxContent>
+                <ComboboxEmpty>找不到符合的動作</ComboboxEmpty>
+                <ComboboxList>
+                  {(it: ExerciseItem) => (
+                    <ComboboxItem key={it.value} value={it}>
+                      {it.label}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
             {exercises.length === 0 && (
               <p className="text-destructive text-sm">尚無已發布的動作可選</p>
             )}
