@@ -48,6 +48,20 @@ export const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "cardio", label: "心肺" },
 ];
 
+export const TAG_OPTIONS: { value: string; label: string }[] = [
+  { value: "fat_burn", label: "燃脂" },
+  { value: "full_body", label: "全身" },
+  { value: "core", label: "核心" },
+  { value: "cardio", label: "有氧" },
+  { value: "strength", label: "力量" },
+  { value: "no_equipment", label: "無器材" },
+  { value: "home", label: "居家" },
+  { value: "morning", label: "早晨" },
+  { value: "tabata", label: "Tabata" },
+  { value: "emom", label: "EMOM" },
+  { value: "amrap", label: "AMRAP" },
+];
+
 export interface Page<T> {
   content: T[];
   totalElements: number;
@@ -56,6 +70,34 @@ export interface Page<T> {
   size: number;
   first: boolean;
   last: boolean;
+}
+
+export interface WorkoutSegment {
+  segmentId: string;
+  exerciseId: string;
+  orderIndex: number;
+  durationSec: number;
+  restAfterSec: number;
+  rounds: number;
+}
+
+export interface WorkoutDraft {
+  id: string;
+  name: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  difficulty: Difficulty;
+  estimatedDurationSec: number;
+  estimatedCalories: number;
+  tags: string[];
+  createdByType: string | null;
+  status: ContentStatus;
+  currentVersion: number;
+  createdBy: number;
+  updatedBy: number | null;
+  createdAt: string;
+  updatedAt: string;
+  segments: WorkoutSegment[];
 }
 
 export interface ExerciseDraft {

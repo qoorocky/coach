@@ -126,6 +126,7 @@ export function ExerciseForm({
       <div className="grid gap-1.5">
         <Label>難度 *</Label>
         <Select
+          items={DIFFICULTY_OPTIONS}
           value={form.watch("difficulty")}
           onValueChange={(v) =>
             form.setValue("difficulty", v as ExerciseFormInput["difficulty"], {
@@ -204,6 +205,7 @@ export function ExerciseForm({
       <div className="grid gap-1.5">
         <Label>分類</Label>
         <Select
+          items={[{ value: NONE_CATEGORY, label: "未分類" }, ...CATEGORY_OPTIONS]}
           value={form.watch("category") || NONE_CATEGORY}
           onValueChange={(v) =>
             form.setValue("category", v && v !== NONE_CATEGORY ? v : "", {

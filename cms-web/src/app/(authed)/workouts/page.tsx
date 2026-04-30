@@ -31,7 +31,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/lifecycle/StatusBadge";
 
-import { useDeleteExercise, useExercises } from "@/lib/queries/exercises";
+import { useDeleteWorkout, useWorkouts } from "@/lib/queries/workouts";
 import { DIFFICULTY_OPTIONS } from "@/lib/domain/types";
 import type { ContentStatus } from "@/lib/domain/types";
 
@@ -43,7 +43,13 @@ const FILTER_OPTIONS: { value: "ALL" | ContentStatus; label: string }[] = [
   { value: "ARCHIVED", label: "已封存" },
 ];
 
-export default function ExercisesListPage() {
+function formatDuration(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s === 0 ? `${m} 分` : `${m} 分 ${s} 秒`;
+}
+
+export default function WorkoutsListPage() {
   const [filter, setFilter] = useState<"ALL" | ContentStatus>("ALL");
   const [page, setPage] = useState(0);
   const size = 20;
@@ -53,19 +59,19 @@ export default function ExercisesListPage() {
     page,
     size,
   };
-  const query = useExercises(params);
-  const del = useDeleteExercise();
+  const query = useWorkouts(params);
+  const del = useDeleteWorkout();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">動作管理</h1>
-          <p className="text-sm text-muted-foreground">建立、編輯、送審動作。</p>
+          <h1 className="text-2xl font-semibold">課程管理</h1>
+          <p className="text-sm text-muted-foreground">建立、編輯、送審課程。</p>
         </div>
-        <Button render={<Link href="/exercises/new" />}>
+        <Button render={<Link href="/workouts/new" />}>
           <Plus className="size-4" />
-          新增動作
+          新增課程
         </Button>
       </div>
 
@@ -95,9 +101,10 @@ export default function ExercisesListPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>名稱 (中)</TableHead>
-              <TableHead>名稱 (英)</TableHead>
+              <TableHead>名稱</TableHead>
               <TableHead>難度</TableHead>
+              <TableHead>時長</TableHead>
+              <TableHead>Segments</TableHead>
               <TableHead>狀態</TableHead>
               <TableHead>版本</TableHead>
               <TableHead className="w-12" />
@@ -108,7 +115,7 @@ export default function ExercisesListPage() {
               <>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={6}>
+                    <TableCell colSpan={7}>
                       <Skeleton className="h-5 w-full" />
                     </TableCell>
                   </TableRow>
@@ -117,48 +124,49 @@ export default function ExercisesListPage() {
             )}
             {query.data?.content.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   沒有資料
                 </TableCell>
               </TableRow>
             )}
-            {query.data?.content.map((ex) => (
-              <TableRow key={ex.id}>
+            {query.data?.content.map((wk) => (
+              <TableRow key={wk.id}>
                 <TableCell>
                   <Link
-                    href={`/exercises/${ex.id}`}
+                    href={`/workouts/${wk.id}`}
                     className="font-medium hover:underline"
                   >
-                    {ex.nameZh}
+                    {wk.name}
                   </Link>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{ex.nameEn}</TableCell>
                 <TableCell>
-                  {DIFFICULTY_OPTIONS.find((o) => o.value === ex.difficulty)?.label ??
-                    ex.difficulty}
+                  {DIFFICULTY_OPTIONS.find((o) => o.value === wk.difficulty)?.label ??
+                    wk.difficulty}
                 </TableCell>
+                <TableCell>{formatDuration(wk.estimatedDurationSec)}</TableCell>
+                <TableCell>{wk.segments.length}</TableCell>
                 <TableCell>
-                  <StatusBadge status={ex.status} />
+                  <StatusBadge status={wk.status} />
                 </TableCell>
-                <TableCell>v{ex.currentVersion}</TableCell>
+                <TableCell>v{wk.currentVersion}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md hover:bg-accent">
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem render={<Link href={`/exercises/${ex.id}`} />}>
+                      <DropdownMenuItem render={<Link href={`/workouts/${wk.id}`} />}>
                         檢視
                       </DropdownMenuItem>
-                      <DropdownMenuItem render={<Link href={`/exercises/${ex.id}/edit`} />}>
+                      <DropdownMenuItem render={<Link href={`/workouts/${wk.id}/edit`} />}>
                         編輯
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        disabled={ex.status !== "DRAFT" || del.isPending}
+                        disabled={wk.status !== "DRAFT" || del.isPending}
                         onClick={() => {
-                          if (!confirm(`確定刪除「${ex.nameZh}」？`)) return;
-                          del.mutate(ex.id, {
+                          if (!confirm(`確定刪除「${wk.name}」？`)) return;
+                          del.mutate(wk.id, {
                             onSuccess: () => toast.success("已刪除"),
                             onError: (e) => toast.error((e as Error).message),
                           });

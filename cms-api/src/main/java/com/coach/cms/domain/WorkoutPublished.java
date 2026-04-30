@@ -83,7 +83,7 @@ public class WorkoutPublished {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "workout_published_id", nullable = false)
     @OrderBy("orderIndex ASC")
     @Builder.Default
