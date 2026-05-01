@@ -1,21 +1,33 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { Exercise, Workout } from "@coach/shared-types";
+import type { StoredSession } from "./sessions/types";
 
 interface CoachDB extends DBSchema {
   exercises: { key: string; value: Exercise };
   workouts: { key: string; value: Workout };
   meta: { key: string; value: { key: string; value: unknown } };
+  sessions: {
+    key: string;
+    value: StoredSession;
+    indexes: { "by-startedAt": number };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<CoachDB>> | null = null;
 
 export function db(): Promise<IDBPDatabase<CoachDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<CoachDB>("coach", 1, {
-      upgrade(d) {
-        d.createObjectStore("exercises", { keyPath: "id" });
-        d.createObjectStore("workouts", { keyPath: "id" });
-        d.createObjectStore("meta", { keyPath: "key" });
+    dbPromise = openDB<CoachDB>("coach", 2, {
+      upgrade(d, oldVersion) {
+        if (oldVersion < 1) {
+          d.createObjectStore("exercises", { keyPath: "id" });
+          d.createObjectStore("workouts", { keyPath: "id" });
+          d.createObjectStore("meta", { keyPath: "key" });
+        }
+        if (oldVersion < 2) {
+          const store = d.createObjectStore("sessions", { keyPath: "sessionId" });
+          store.createIndex("by-startedAt", "startedAt");
+        }
       },
     });
   }

@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { use } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Pause, Play, SkipForward, Square } from "lucide-react";
 
 import { useExercisesByIds, useWorkout } from "@/lib/queries/content";
 import { useWorkoutEngine, type Phase } from "@/lib/engine/useWorkoutEngine";
 import { useWakeLock } from "@/lib/engine/wakeLock";
+import { useSaveSession } from "@/lib/queries/sessions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,6 +40,41 @@ export default function PlayWorkoutPage({ params }: Props) {
   const isLive =
     engine.phase.kind !== "idle" && engine.phase.kind !== "done";
   useWakeLock(isLive && !engine.isPaused);
+
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (engine.phase.kind === "prepare" && startedAt === null) {
+      setStartedAt(Date.now());
+    }
+    if (engine.phase.kind === "idle" && startedAt !== null) {
+      setStartedAt(null);
+    }
+  }, [engine.phase.kind, startedAt]);
+
+  const saveSession = useSaveSession();
+  const savedRef = useRef(false);
+  useEffect(() => {
+    if (
+      engine.phase.kind === "done" &&
+      !savedRef.current &&
+      workout &&
+      startedAt !== null
+    ) {
+      savedRef.current = true;
+      const now = Date.now();
+      saveSession.mutate({
+        sessionId: crypto.randomUUID(),
+        workoutId: workout.id,
+        startedAt,
+        endedAt: now,
+        completedSegments: [],
+        heartRateSamples: [],
+        wasCompleted: true,
+        totalElapsedMs: engine.totalElapsedMs,
+        workoutSnapshot: workout,
+      });
+    }
+  }, [engine.phase.kind, workout, startedAt, engine.totalElapsedMs, saveSession]);
 
   if (isPending) {
     return (

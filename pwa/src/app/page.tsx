@@ -26,6 +26,15 @@ export default function HomePage() {
         </div>
         <WorkoutsHomeList limit={5} />
       </section>
+
+      <section>
+        <Link
+          href="/history"
+          className="block rounded-lg border bg-card p-3 text-sm hover:bg-muted/30"
+        >
+          訓練紀錄 →
+        </Link>
+      </section>
     </main>
   );
 }
