@@ -1,14 +1,31 @@
+import Link from "next/link";
+import { AutoSync } from "@/components/AutoSync";
+import { SyncStatus } from "@/components/SyncStatus";
+import { WorkoutsHomeList } from "@/components/WorkoutsHomeList";
+
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-md px-4 py-12 space-y-4">
-      <h1 className="text-3xl font-semibold">Coach</h1>
-      <p className="text-muted-foreground">HIIT 訓練應用，支援離線安裝。</p>
-      <div className="rounded-md border bg-card p-4 text-sm">
-        <p className="font-medium">Sprint A</p>
-        <p className="text-muted-foreground mt-1">
-          PWA scaffold 已就緒。下一步：把 cms-api 內容同步到本機 IndexedDB。
-        </p>
-      </div>
+    <main className="mx-auto max-w-md px-4 py-8 space-y-6">
+      <AutoSync />
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold">Coach</h1>
+        <p className="text-sm text-muted-foreground">HIIT 訓練，支援離線。</p>
+      </header>
+
+      <SyncStatus />
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">課程</h2>
+          <Link
+            href="/workouts"
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            全部
+          </Link>
+        </div>
+        <WorkoutsHomeList limit={5} />
+      </section>
     </main>
   );
 }
