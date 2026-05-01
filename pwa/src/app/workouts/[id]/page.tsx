@@ -89,14 +89,12 @@ export default function WorkoutDetailPage({ params }: Props) {
         </p>
       )}
 
-      <button
-        type="button"
-        disabled
-        className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground opacity-50"
-        title="HIIT engine 將於 PWA-C 完成"
+      <Link
+        href={`/workouts/${workout.id}/play`}
+        className="block w-full rounded-lg bg-primary px-4 py-3 text-center text-sm font-medium text-primary-foreground hover:opacity-90"
       >
-        開始訓練（即將推出）
-      </button>
+        開始訓練
+      </Link>
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">
