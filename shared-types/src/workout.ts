@@ -1,5 +1,7 @@
 import type { Difficulty } from './exercise';
 
+export type WorkoutMode = 'standard' | 'tabata' | 'emom' | 'amrap';
+
 export interface WorkoutSegment {
   segmentId: string;
   exerciseId: string;
@@ -15,6 +17,7 @@ export interface Workout {
   description: string;
   coverImageUrl: string;
   difficulty: Difficulty;
+  mode: WorkoutMode;
   estimatedDurationSec: number;
   estimatedCalories: number;
   segments: WorkoutSegment[];

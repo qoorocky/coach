@@ -1,10 +1,18 @@
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 export type ContentStatus = "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED";
+export type WorkoutMode = "standard" | "tabata" | "emom" | "amrap";
 
 export const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: "beginner", label: "初級" },
   { value: "intermediate", label: "中級" },
   { value: "advanced", label: "高級" },
+];
+
+export const WORKOUT_MODE_OPTIONS: { value: WorkoutMode; label: string }[] = [
+  { value: "standard", label: "標準" },
+  { value: "tabata", label: "Tabata (20s/10s × 8)" },
+  { value: "emom", label: "EMOM (每分鐘)" },
+  { value: "amrap", label: "AMRAP (限時最多輪)" },
 ];
 
 export const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
@@ -87,6 +95,7 @@ export interface WorkoutDraft {
   description: string | null;
   coverImageUrl: string | null;
   difficulty: Difficulty;
+  mode: WorkoutMode;
   estimatedDurationSec: number;
   estimatedCalories: number;
   tags: string[];

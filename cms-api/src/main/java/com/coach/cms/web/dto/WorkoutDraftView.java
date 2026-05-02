@@ -3,6 +3,7 @@ package com.coach.cms.web.dto;
 import com.coach.cms.domain.ContentStatus;
 import com.coach.cms.domain.Difficulty;
 import com.coach.cms.domain.WorkoutDraft;
+import com.coach.cms.domain.WorkoutMode;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,6 +15,7 @@ public record WorkoutDraftView(
         String description,
         String coverImageUrl,
         Difficulty difficulty,
+        WorkoutMode mode,
         int estimatedDurationSec,
         int estimatedCalories,
         List<String> tags,
@@ -32,7 +34,8 @@ public record WorkoutDraftView(
                 .toList();
         return new WorkoutDraftView(
                 d.getId(), d.getName(), d.getDescription(), d.getCoverImageUrl(),
-                d.getDifficulty(), d.getEstimatedDurationSec(), d.getEstimatedCalories(),
+                d.getDifficulty(), d.getMode(),
+                d.getEstimatedDurationSec(), d.getEstimatedCalories(),
                 d.getTags(), d.getCreatedByType(), d.getStatus(), d.getCurrentVersion(),
                 d.getCreatedBy(), d.getUpdatedBy(), d.getCreatedAt(), d.getUpdatedAt(),
                 segs);

@@ -10,6 +10,7 @@ export const workoutFormSchema = z.object({
   description: z.string(),
   coverImageUrl: urlOrEmpty,
   difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+  mode: z.enum(["standard", "tabata", "emom", "amrap"]),
   estimatedDurationSec: z
     .string()
     .refine((s) => /^\d+$/.test(s), "請輸入有效的數字"),
@@ -26,6 +27,7 @@ export interface WorkoutUpsertRequest {
   description?: string | null;
   coverImageUrl?: string | null;
   difficulty: "beginner" | "intermediate" | "advanced";
+  mode: "standard" | "tabata" | "emom" | "amrap";
   estimatedDurationSec: number;
   estimatedCalories: number;
   tags: string[];
@@ -38,6 +40,7 @@ export function toWorkoutUpsertRequest(values: WorkoutFormInput): WorkoutUpsertR
     description: values.description.trim() || null,
     coverImageUrl: values.coverImageUrl || null,
     difficulty: values.difficulty,
+    mode: values.mode,
     estimatedDurationSec: Number(values.estimatedDurationSec),
     estimatedCalories: Number(values.estimatedCalories),
     tags: values.tags,

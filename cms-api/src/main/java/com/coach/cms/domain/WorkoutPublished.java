@@ -56,6 +56,10 @@ public class WorkoutPublished {
     @Column(nullable = false, length = 20)
     private Difficulty difficulty;
 
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private WorkoutMode mode = WorkoutMode.STANDARD;
+
     @Column(name = "estimated_duration_sec", nullable = false)
     private int estimatedDurationSec;
 

@@ -170,11 +170,13 @@ export default function PlayWorkoutPage({ params }: Props) {
           )}
 
           {(engine.phase.kind === "work" ||
-            engine.phase.kind === "rest") && (
+            engine.phase.kind === "rest") &&
+            engine.mode !== "amrap" && (
             <>
               <p className="text-xs text-white/80">
                 段落 {engine.phase.segIdx + 1} / {workout.segments.length} ·
-                回合 {engine.phase.roundIdx + 1} / {engine.segment?.rounds}
+                回合 {engine.phase.roundIdx + 1} /{" "}
+                {engine.phase.totalRoundsInSeg}
               </p>
               <h1 className="text-3xl font-semibold">
                 {engine.phase.kind === "rest"
@@ -186,6 +188,30 @@ export default function PlayWorkoutPage({ params }: Props) {
               </p>
               {engine.nextExercise && (
                 <p className="text-sm text-white/80">
+                  下一個：{engine.nextExercise.name}
+                </p>
+              )}
+            </>
+          )}
+
+          {(engine.phase.kind === "work" ||
+            engine.phase.kind === "rest") &&
+            engine.mode === "amrap" && (
+            <>
+              <p className="text-xs text-white/80">
+                AMRAP · 第 {engine.amrapRound} 輪
+              </p>
+              <h1 className="text-3xl font-semibold">
+                {engine.exercise?.name ?? "-"}
+              </h1>
+              <p className="text-9xl font-bold tabular-nums">
+                {formatMmSs(engine.totalRemainingMs)}
+              </p>
+              <p className="text-sm text-white/80">
+                本動作剩 {formatMmSs(remainingMs)}
+              </p>
+              {engine.nextExercise && (
+                <p className="text-sm text-white/70">
                   下一個：{engine.nextExercise.name}
                 </p>
               )}

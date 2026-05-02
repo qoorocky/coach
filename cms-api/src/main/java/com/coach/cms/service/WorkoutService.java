@@ -76,6 +76,7 @@ public class WorkoutService {
                 .description(req.description() == null ? "" : req.description())
                 .coverImageUrl(req.coverImageUrl())
                 .difficulty(req.difficulty())
+                .mode(req.mode() == null ? com.coach.cms.domain.WorkoutMode.STANDARD : req.mode())
                 .estimatedDurationSec(req.estimatedDurationSec())
                 .estimatedCalories(req.estimatedCalories())
                 .tags(new ArrayList<>(req.tags() == null ? List.of() : req.tags()))
@@ -101,6 +102,9 @@ public class WorkoutService {
         d.setDescription(req.description() == null ? "" : req.description());
         d.setCoverImageUrl(req.coverImageUrl());
         d.setDifficulty(req.difficulty());
+        if (req.mode() != null) {
+            d.setMode(req.mode());
+        }
         d.setEstimatedDurationSec(req.estimatedDurationSec());
         d.setEstimatedCalories(req.estimatedCalories());
         d.setTags(new ArrayList<>(req.tags() == null ? List.of() : req.tags()));
@@ -270,6 +274,7 @@ public class WorkoutService {
         p.setDescription(d.getDescription());
         p.setCoverImageUrl(d.getCoverImageUrl());
         p.setDifficulty(d.getDifficulty());
+        p.setMode(d.getMode());
         p.setEstimatedDurationSec(d.getEstimatedDurationSec());
         p.setEstimatedCalories(d.getEstimatedCalories());
         p.setTags(new ArrayList<>(d.getTags()));

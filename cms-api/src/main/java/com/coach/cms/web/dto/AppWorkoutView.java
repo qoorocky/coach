@@ -1,6 +1,7 @@
 package com.coach.cms.web.dto;
 
 import com.coach.cms.domain.Difficulty;
+import com.coach.cms.domain.WorkoutMode;
 import com.coach.cms.domain.WorkoutPublished;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public record AppWorkoutView(
         String description,
         String coverImageUrl,
         Difficulty difficulty,
+        WorkoutMode mode,
         int estimatedDurationSec,
         int estimatedCalories,
         List<AppWorkoutSegmentView> segments,
@@ -31,6 +33,7 @@ public record AppWorkoutView(
                 w.getDescription(),
                 w.getCoverImageUrl() == null ? "" : w.getCoverImageUrl(),
                 w.getDifficulty(),
+                w.getMode(),
                 w.getEstimatedDurationSec(),
                 w.getEstimatedCalories(),
                 segs,

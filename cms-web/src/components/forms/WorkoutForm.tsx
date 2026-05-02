@@ -23,7 +23,7 @@ import {
   type WorkoutFormInput,
   type WorkoutUpsertRequest,
 } from "@/lib/schemas/workout";
-import { DIFFICULTY_OPTIONS, TAG_OPTIONS } from "@/lib/domain/types";
+import { DIFFICULTY_OPTIONS, TAG_OPTIONS, WORKOUT_MODE_OPTIONS } from "@/lib/domain/types";
 import type { WorkoutDraft } from "@/lib/domain/types";
 
 interface Props {
@@ -44,6 +44,7 @@ function defaultsFrom(initial?: WorkoutDraft): WorkoutFormInput {
       estimatedDurationSec: "0",
       estimatedCalories: "0",
       tags: [],
+      mode: "standard",
     };
   }
   return {
@@ -51,6 +52,7 @@ function defaultsFrom(initial?: WorkoutDraft): WorkoutFormInput {
     description: initial.description ?? "",
     coverImageUrl: initial.coverImageUrl ?? "",
     difficulty: initial.difficulty,
+    mode: initial.mode ?? "standard",
     estimatedDurationSec: String(initial.estimatedDurationSec),
     estimatedCalories: String(initial.estimatedCalories),
     tags: initial.tags,
@@ -118,6 +120,34 @@ export function WorkoutForm({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label>模式 *</Label>
+        <Select
+          items={WORKOUT_MODE_OPTIONS}
+          value={form.watch("mode")}
+          onValueChange={(v) =>
+            form.setValue("mode", v as WorkoutFormInput["mode"], {
+              shouldDirty: true,
+            })
+          }
+          disabled={pending}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {WORKOUT_MODE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          標準：依 segments 順序執行；Tabata：每段 8 回 × 20s/10s；EMOM：每分鐘換段；AMRAP：限時內循環，segment.rounds 略過。
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

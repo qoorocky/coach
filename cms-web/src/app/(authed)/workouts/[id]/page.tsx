@@ -12,7 +12,7 @@ import { WorkoutLifecycleActions } from "@/components/lifecycle/WorkoutLifecycle
 
 import { useWorkout } from "@/lib/queries/workouts";
 import { useExercises } from "@/lib/queries/exercises";
-import { DIFFICULTY_OPTIONS, TAG_OPTIONS } from "@/lib/domain/types";
+import { DIFFICULTY_OPTIONS, TAG_OPTIONS, WORKOUT_MODE_OPTIONS } from "@/lib/domain/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -88,8 +88,15 @@ export default function WorkoutDetailPage({ params }: Props) {
 
       <Separator />
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-4">
         <Field label="難度" value={difficultyLabel} />
+        <Field
+          label="模式"
+          value={
+            WORKOUT_MODE_OPTIONS.find((o) => o.value === data.mode)?.label ??
+            data.mode
+          }
+        />
         <Field label="預估時長" value={formatDuration(data.estimatedDurationSec)} />
         <Field label="預估卡路里" value={`${data.estimatedCalories} kcal`} />
       </div>
