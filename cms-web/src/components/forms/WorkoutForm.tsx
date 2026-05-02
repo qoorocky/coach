@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { ChipGroup } from "@/components/ui/chip-group";
 import { FileUploadField } from "@/components/forms/FileUploadField";
+import { TrackPicker } from "@/components/forms/TrackPicker";
 
 import {
   toWorkoutUpsertRequest,
@@ -44,6 +45,7 @@ function defaultsFrom(initial?: WorkoutDraft): WorkoutFormInput {
       estimatedDurationSec: "0",
       estimatedCalories: "0",
       tags: [],
+      trackIds: [],
       mode: "standard",
     };
   }
@@ -56,6 +58,7 @@ function defaultsFrom(initial?: WorkoutDraft): WorkoutFormInput {
     estimatedDurationSec: String(initial.estimatedDurationSec),
     estimatedCalories: String(initial.estimatedCalories),
     tags: initial.tags,
+    trackIds: initial.trackIds ?? [],
   };
 }
 
@@ -193,6 +196,24 @@ export function WorkoutForm({
               options={TAG_OPTIONS}
               disabled={pending}
             />
+          </div>
+        )}
+      />
+
+      <Controller
+        control={form.control}
+        name="trackIds"
+        render={({ field }) => (
+          <div className="grid gap-1.5">
+            <Label>背景音樂</Label>
+            <TrackPicker
+              value={field.value}
+              onChange={field.onChange}
+              disabled={pending}
+            />
+            <p className="text-xs text-muted-foreground">
+              訓練時依序循環播放選定的曲目；不選則靜音。
+            </p>
           </div>
         )}
       />

@@ -65,6 +65,11 @@ public class WorkoutDraft {
     @Builder.Default
     private List<String> tags = new ArrayList<>();
 
+    @Type(JsonType.class)
+    @Column(name = "track_ids", columnDefinition = "jsonb", nullable = false)
+    @Builder.Default
+    private List<UUID> trackIds = new ArrayList<>();
+
     @Column(name = "created_by_type", nullable = false, length = 10)
     @Builder.Default
     private String createdByType = "system";

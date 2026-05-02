@@ -24,9 +24,12 @@ public class UploadController {
             Set.of("image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif");
     private static final Set<String> VIDEO_TYPES =
             Set.of("video/mp4", "video/quicktime", "video/webm");
+    private static final Set<String> AUDIO_TYPES =
+            Set.of("audio/mpeg", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/wav");
 
     private static final long IMAGE_MAX_BYTES = 10L * 1024 * 1024;
     private static final long VIDEO_MAX_BYTES = 100L * 1024 * 1024;
+    private static final long AUDIO_MAX_BYTES = 20L * 1024 * 1024;
 
     private final FileStorage storage;
 
@@ -49,6 +52,8 @@ public class UploadController {
             max = IMAGE_MAX_BYTES;
         } else if (VIDEO_TYPES.contains(mime)) {
             max = VIDEO_MAX_BYTES;
+        } else if (AUDIO_TYPES.contains(mime)) {
+            max = AUDIO_MAX_BYTES;
         } else {
             throw new ResponseStatusException(BAD_REQUEST, "unsupported mime type: " + mime);
         }

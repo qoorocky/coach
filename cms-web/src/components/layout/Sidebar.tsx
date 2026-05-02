@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dumbbell, LayoutDashboard, ListChecks, Layers } from "lucide-react";
+import { Dumbbell, LayoutDashboard, ListChecks, Layers, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -16,6 +16,7 @@ const NAV: NavItem[] = [
   { href: "/", label: "儀表板", icon: LayoutDashboard, matchPrefix: undefined },
   { href: "/exercises", label: "動作管理", icon: Dumbbell, matchPrefix: "/exercises" },
   { href: "/workouts", label: "課程管理", icon: Layers, matchPrefix: "/workouts" },
+  { href: "/music", label: "音樂庫", icon: Music, matchPrefix: "/music" },
   { href: "/review", label: "待審核", icon: ListChecks, matchPrefix: "/review" },
 ];
 

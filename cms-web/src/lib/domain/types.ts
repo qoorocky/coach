@@ -56,6 +56,32 @@ export const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "cardio", label: "心肺" },
 ];
 
+export const LICENSE_OPTIONS: { value: string; label: string }[] = [
+  { value: "CC0", label: "CC0 公眾領域" },
+  { value: "CC-BY", label: "CC BY" },
+  { value: "CC-BY-SA", label: "CC BY-SA" },
+  { value: "CC-BY-NC", label: "CC BY-NC" },
+  { value: "CC-BY-NC-SA", label: "CC BY-NC-SA" },
+  { value: "OWNED", label: "自有授權" },
+];
+
+export interface MusicTrack {
+  id: string;
+  name: string;
+  artist: string | null;
+  bpm: number | null;
+  durationSec: number;
+  fileUrl: string;
+  fileSizeBytes: number;
+  mimeType: string;
+  license: string;
+  licenseUrl: string | null;
+  active: boolean;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const TAG_OPTIONS: { value: string; label: string }[] = [
   { value: "fat_burn", label: "燃脂" },
   { value: "full_body", label: "全身" },
@@ -99,6 +125,7 @@ export interface WorkoutDraft {
   estimatedDurationSec: number;
   estimatedCalories: number;
   tags: string[];
+  trackIds: string[];
   createdByType: string | null;
   status: ContentStatus;
   currentVersion: number;

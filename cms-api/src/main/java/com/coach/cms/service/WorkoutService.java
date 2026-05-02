@@ -80,6 +80,7 @@ public class WorkoutService {
                 .estimatedDurationSec(req.estimatedDurationSec())
                 .estimatedCalories(req.estimatedCalories())
                 .tags(new ArrayList<>(req.tags() == null ? List.of() : req.tags()))
+                .trackIds(new ArrayList<>(req.trackIds() == null ? List.of() : req.trackIds()))
                 .createdByType(req.createdByType() == null ? "system" : req.createdByType())
                 .status(ContentStatus.DRAFT)
                 .currentVersion(0)
@@ -108,6 +109,7 @@ public class WorkoutService {
         d.setEstimatedDurationSec(req.estimatedDurationSec());
         d.setEstimatedCalories(req.estimatedCalories());
         d.setTags(new ArrayList<>(req.tags() == null ? List.of() : req.tags()));
+        d.setTrackIds(new ArrayList<>(req.trackIds() == null ? List.of() : req.trackIds()));
         if (req.createdByType() != null) {
             d.setCreatedByType(req.createdByType());
         }
@@ -278,6 +280,7 @@ public class WorkoutService {
         p.setEstimatedDurationSec(d.getEstimatedDurationSec());
         p.setEstimatedCalories(d.getEstimatedCalories());
         p.setTags(new ArrayList<>(d.getTags()));
+        p.setTrackIds(new ArrayList<>(d.getTrackIds()));
         p.setCreatedByType(d.getCreatedByType());
         p.setActive(true);
         p.setPublishedBy(actor.id());

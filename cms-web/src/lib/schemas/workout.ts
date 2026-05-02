@@ -18,6 +18,7 @@ export const workoutFormSchema = z.object({
     .string()
     .refine((s) => /^\d+$/.test(s), "請輸入有效的數字"),
   tags: z.array(z.string()),
+  trackIds: z.array(z.string()),
 });
 
 export type WorkoutFormInput = z.infer<typeof workoutFormSchema>;
@@ -31,6 +32,7 @@ export interface WorkoutUpsertRequest {
   estimatedDurationSec: number;
   estimatedCalories: number;
   tags: string[];
+  trackIds: string[];
   createdByType?: string | null;
 }
 
@@ -44,6 +46,7 @@ export function toWorkoutUpsertRequest(values: WorkoutFormInput): WorkoutUpsertR
     estimatedDurationSec: Number(values.estimatedDurationSec),
     estimatedCalories: Number(values.estimatedCalories),
     tags: values.tags,
+    trackIds: values.trackIds,
   };
 }
 

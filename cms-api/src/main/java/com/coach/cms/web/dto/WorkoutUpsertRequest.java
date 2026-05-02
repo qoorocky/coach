@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
+import java.util.UUID;
 
 public record WorkoutUpsertRequest(
         @NotBlank @Size(max = 100) String name,
@@ -18,6 +19,7 @@ public record WorkoutUpsertRequest(
         @Min(0) int estimatedDurationSec,
         @Min(0) int estimatedCalories,
         List<String> tags,
+        List<UUID> trackIds,
         String createdByType
 ) {
 }

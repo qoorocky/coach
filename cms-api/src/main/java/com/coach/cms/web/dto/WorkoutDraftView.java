@@ -19,6 +19,7 @@ public record WorkoutDraftView(
         int estimatedDurationSec,
         int estimatedCalories,
         List<String> tags,
+        List<UUID> trackIds,
         String createdByType,
         ContentStatus status,
         int currentVersion,
@@ -36,7 +37,8 @@ public record WorkoutDraftView(
                 d.getId(), d.getName(), d.getDescription(), d.getCoverImageUrl(),
                 d.getDifficulty(), d.getMode(),
                 d.getEstimatedDurationSec(), d.getEstimatedCalories(),
-                d.getTags(), d.getCreatedByType(), d.getStatus(), d.getCurrentVersion(),
+                d.getTags(), d.getTrackIds(),
+                d.getCreatedByType(), d.getStatus(), d.getCurrentVersion(),
                 d.getCreatedBy(), d.getUpdatedBy(), d.getCreatedAt(), d.getUpdatedAt(),
                 segs);
     }
