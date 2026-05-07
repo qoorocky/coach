@@ -7,6 +7,7 @@ import {
 import {
   addSegment,
   approveWorkout,
+  archiveWorkout,
   createWorkout,
   deleteSegment,
   deleteWorkout,
@@ -15,6 +16,7 @@ import {
   rejectWorkout,
   reorderSegments,
   submitWorkout,
+  unarchiveWorkout,
   updateSegment,
   updateWorkout,
   type ListParams,
@@ -118,6 +120,22 @@ export function useRejectWorkout(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (comment: string) => rejectWorkout(id, comment),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [WK_KEY] }),
+  });
+}
+
+export function useArchiveWorkout(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => archiveWorkout(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [WK_KEY] }),
+  });
+}
+
+export function useUnarchiveWorkout(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => unarchiveWorkout(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [WK_KEY] }),
   });
 }

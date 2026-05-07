@@ -121,4 +121,16 @@ public class WorkoutController {
                                    @Valid @RequestBody ReviewCommentRequest req) {
         return WorkoutDraftView.from(service.reject(id, req.comment(), CurrentUser.require()));
     }
+
+    @PostMapping("/{id}/archive")
+    @PreAuthorize("hasAnyRole('REVIEWER','ADMIN')")
+    public WorkoutDraftView archive(@PathVariable UUID id) {
+        return WorkoutDraftView.from(service.archive(id, CurrentUser.require()));
+    }
+
+    @PostMapping("/{id}/unarchive")
+    @PreAuthorize("hasAnyRole('REVIEWER','ADMIN')")
+    public WorkoutDraftView unarchive(@PathVariable UUID id) {
+        return WorkoutDraftView.from(service.unarchive(id, CurrentUser.require()));
+    }
 }

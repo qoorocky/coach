@@ -83,6 +83,9 @@ public class ExerciseService {
         if (d.getStatus() == ContentStatus.IN_REVIEW) {
             throw new ResponseStatusException(CONFLICT, "cannot edit while IN_REVIEW");
         }
+        if (d.getStatus() == ContentStatus.ARCHIVED) {
+            throw new ResponseStatusException(CONFLICT, "unarchive before editing");
+        }
         d.setNameZh(req.nameZh());
         d.setNameEn(req.nameEn());
         d.setDescription(req.description());
@@ -168,6 +171,50 @@ public class ExerciseService {
 
         recordAction(d.getId(), ReviewActionType.APPROVE, comment, actor);
         recordAction(d.getId(), ReviewActionType.PUBLISH, null, actor);
+        return d;
+    }
+
+    @Transactional
+    public ExerciseDraft archive(UUID id, CmsUserPrincipal actor) {
+        ExerciseDraft d = get(id);
+        if (d.getStatus() != ContentStatus.PUBLISHED) {
+            throw new ResponseStatusException(CONFLICT, "only PUBLISHED can be archived");
+        }
+        Instant now = Instant.now();
+        d.setStatus(ContentStatus.ARCHIVED);
+        d.setUpdatedBy(actor.id());
+        d.setUpdatedAt(now);
+        drafts.save(d);
+
+        published.findByDraftId(d.getId()).ifPresent(p -> {
+            p.setActive(false);
+            p.setUpdatedAt(now);
+            published.save(p);
+        });
+
+        recordAction(d.getId(), ReviewActionType.ARCHIVE, null, actor);
+        return d;
+    }
+
+    @Transactional
+    public ExerciseDraft unarchive(UUID id, CmsUserPrincipal actor) {
+        ExerciseDraft d = get(id);
+        if (d.getStatus() != ContentStatus.ARCHIVED) {
+            throw new ResponseStatusException(CONFLICT, "only ARCHIVED can be unarchived");
+        }
+        Instant now = Instant.now();
+        d.setStatus(ContentStatus.PUBLISHED);
+        d.setUpdatedBy(actor.id());
+        d.setUpdatedAt(now);
+        drafts.save(d);
+
+        published.findByDraftId(d.getId()).ifPresent(p -> {
+            p.setActive(true);
+            p.setUpdatedAt(now);
+            published.save(p);
+        });
+
+        recordAction(d.getId(), ReviewActionType.UNARCHIVE, null, actor);
         return d;
     }
 

@@ -43,13 +43,15 @@ export default function EditWorkoutPage({ params }: Props) {
     );
   }
 
-  if (data.status !== "DRAFT") {
+  if (data.status === "IN_REVIEW" || data.status === "ARCHIVED") {
     return (
       <div className="space-y-3">
         <BackLink href="/workouts" />
         <h1 className="text-xl font-semibold">無法編輯</h1>
         <p className="text-sm text-muted-foreground">
-          只有草稿狀態可以編輯，目前狀態為 {data.status}。
+          {data.status === "IN_REVIEW"
+            ? "審核中無法編輯，請先退回。"
+            : "已封存無法編輯，請先重新上架。"}
         </p>
       </div>
     );
@@ -62,6 +64,11 @@ export default function EditWorkoutPage({ params }: Props) {
         <h1 className="text-2xl font-semibold">編輯課程</h1>
         <p className="text-sm text-muted-foreground">{data.name}</p>
       </div>
+      {data.status === "PUBLISHED" && (
+        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          目前是已發布版本，儲存後會建立新草稿並退回 DRAFT 狀態，需重新送審 / 核准才會更新到 PWA。
+        </p>
+      )}
 
       <WorkoutForm
         initial={data}

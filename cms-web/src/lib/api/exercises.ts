@@ -56,3 +56,17 @@ export function rejectExercise(id: string, comment: string): Promise<ExerciseDra
     body: { comment },
   });
 }
+
+export function archiveExercise(id: string): Promise<ExerciseDraft> {
+  return apiFetch<ExerciseDraft>(`/api/cms/exercises/${id}/archive`, {
+    method: "POST",
+    body: {},
+  });
+}
+
+export function unarchiveExercise(id: string): Promise<ExerciseDraft> {
+  return apiFetch<ExerciseDraft>(`/api/cms/exercises/${id}/unarchive`, {
+    method: "POST",
+    body: {},
+  });
+}

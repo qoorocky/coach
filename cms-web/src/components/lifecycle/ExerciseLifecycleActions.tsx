@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { RejectDialog } from "./RejectDialog";
 import {
   useApproveExercise,
+  useArchiveExercise,
   useRejectExercise,
   useSubmitExercise,
+  useUnarchiveExercise,
 } from "@/lib/queries/exercises";
 import type { ContentStatus } from "@/lib/domain/types";
 import { useAuthStore } from "@/lib/auth/store";
@@ -28,9 +30,13 @@ export function ExerciseLifecycleActions({ id, status }: Props) {
   const submit = useSubmitExercise(id);
   const approve = useApproveExercise(id);
   const reject = useRejectExercise(id);
+  const archive = useArchiveExercise(id);
+  const unarchive = useUnarchiveExercise(id);
 
   const canSubmit = status === "DRAFT" && role && EDITOR_ROLES.has(role);
   const canReview = status === "IN_REVIEW" && role && REVIEWER_ROLES.has(role);
+  const canArchive = status === "PUBLISHED" && role && REVIEWER_ROLES.has(role);
+  const canUnarchive = status === "ARCHIVED" && role && REVIEWER_ROLES.has(role);
 
   return (
     <div className="flex items-center gap-2">
@@ -78,6 +84,34 @@ export function ExerciseLifecycleActions({ id, status }: Props) {
             }
           />
         </>
+      )}
+      {canArchive && (
+        <Button
+          variant="destructive"
+          disabled={archive.isPending}
+          onClick={() => {
+            if (!confirm("下架後 PWA 會收到刪除指令，下次同步即生效。確定？")) return;
+            archive.mutate(undefined, {
+              onSuccess: () => toast.success("已下架"),
+              onError: (e) => toast.error((e as Error).message),
+            });
+          }}
+        >
+          {archive.isPending ? "下架中..." : "下架"}
+        </Button>
+      )}
+      {canUnarchive && (
+        <Button
+          disabled={unarchive.isPending}
+          onClick={() =>
+            unarchive.mutate(undefined, {
+              onSuccess: () => toast.success("已重新上架"),
+              onError: (e) => toast.error((e as Error).message),
+            })
+          }
+        >
+          {unarchive.isPending ? "上架中..." : "重新上架"}
+        </Button>
       )}
     </div>
   );

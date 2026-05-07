@@ -90,4 +90,16 @@ public class ExerciseController {
                                     @Valid @RequestBody ReviewCommentRequest req) {
         return ExerciseDraftView.from(service.reject(id, req.comment(), CurrentUser.require()));
     }
+
+    @PostMapping("/{id}/archive")
+    @PreAuthorize("hasAnyRole('REVIEWER','ADMIN')")
+    public ExerciseDraftView archive(@PathVariable UUID id) {
+        return ExerciseDraftView.from(service.archive(id, CurrentUser.require()));
+    }
+
+    @PostMapping("/{id}/unarchive")
+    @PreAuthorize("hasAnyRole('REVIEWER','ADMIN')")
+    public ExerciseDraftView unarchive(@PathVariable UUID id) {
+        return ExerciseDraftView.from(service.unarchive(id, CurrentUser.require()));
+    }
 }

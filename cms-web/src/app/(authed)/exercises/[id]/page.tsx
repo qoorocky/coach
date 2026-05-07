@@ -74,7 +74,7 @@ export default function ExerciseDetailPage({ params }: Props) {
           <p className="text-sm text-muted-foreground">{data.nameEn}</p>
         </div>
         <div className="flex items-center gap-2">
-          {data.status === "DRAFT" && (
+          {(data.status === "DRAFT" || data.status === "PUBLISHED") && (
             <Button
               variant="outline"
               render={<Link href={`/exercises/${data.id}/edit`} />}

@@ -6,12 +6,14 @@ import {
 
 import {
   approveExercise,
+  archiveExercise,
   createExercise,
   deleteExercise,
   getExercise,
   listExercises,
   rejectExercise,
   submitExercise,
+  unarchiveExercise,
   updateExercise,
   type ListParams,
 } from "@/lib/api/exercises";
@@ -80,6 +82,22 @@ export function useRejectExercise(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (comment: string) => rejectExercise(id, comment),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [EX_KEY] }),
+  });
+}
+
+export function useArchiveExercise(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => archiveExercise(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [EX_KEY] }),
+  });
+}
+
+export function useUnarchiveExercise(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => unarchiveExercise(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: [EX_KEY] }),
   });
 }

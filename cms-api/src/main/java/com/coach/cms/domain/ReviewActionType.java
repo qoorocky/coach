@@ -5,5 +5,6 @@ public enum ReviewActionType {
     APPROVE,
     REJECT,
     PUBLISH,
-    ARCHIVE
+    ARCHIVE,
+    UNARCHIVE
 }

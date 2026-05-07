@@ -87,3 +87,17 @@ export function rejectWorkout(id: string, comment: string): Promise<WorkoutDraft
     body: { comment },
   });
 }
+
+export function archiveWorkout(id: string): Promise<WorkoutDraft> {
+  return apiFetch<WorkoutDraft>(`/api/cms/workouts/${id}/archive`, {
+    method: "POST",
+    body: {},
+  });
+}
+
+export function unarchiveWorkout(id: string): Promise<WorkoutDraft> {
+  return apiFetch<WorkoutDraft>(`/api/cms/workouts/${id}/unarchive`, {
+    method: "POST",
+    body: {},
+  });
+}

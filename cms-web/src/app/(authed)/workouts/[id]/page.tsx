@@ -74,7 +74,7 @@ export default function WorkoutDetailPage({ params }: Props) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {data.status === "DRAFT" && (
+          {(data.status === "DRAFT" || data.status === "PUBLISHED") && (
             <Button
               variant="outline"
               render={<Link href={`/workouts/${data.id}/edit`} />}
