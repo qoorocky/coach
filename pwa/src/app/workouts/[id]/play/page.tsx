@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Pause, Play, SkipForward, Square } from "lucide-react";
+import { ChevronLeft, Music, Pause, Play, SkipForward, Square } from "lucide-react";
 
-import { useExercisesByIds, useWorkout } from "@/lib/queries/content";
+import { useExercisesByIds, useTracksByIds, useWorkout } from "@/lib/queries/content";
 import { useWorkoutEngine, type Phase } from "@/lib/engine/useWorkoutEngine";
 import { useWakeLock } from "@/lib/engine/wakeLock";
+import { useMusicPlayer } from "@/lib/engine/music";
 import { useSaveSession } from "@/lib/queries/sessions";
 
 interface Props {
@@ -40,6 +41,29 @@ export default function PlayWorkoutPage({ params }: Props) {
   const isLive =
     engine.phase.kind !== "idle" && engine.phase.kind !== "done";
   useWakeLock(isLive && !engine.isPaused);
+
+  const trackIds = workout?.trackIds ?? [];
+  const { data: tracks = [] } = useTracksByIds(trackIds);
+  const music = useMusicPlayer(tracks);
+
+  // Drive music from engine state
+  const prevPhaseRef = useRef<Phase["kind"]>("idle");
+  useEffect(() => {
+    const prev = prevPhaseRef.current;
+    const cur = engine.phase.kind;
+    if (cur === "prepare" && prev === "idle") music.start();
+    if (cur === "done") music.stop();
+    if (cur === "idle" && prev !== "idle") music.stop();
+    prevPhaseRef.current = cur;
+  }, [engine.phase.kind, music]);
+
+  useEffect(() => {
+    if (!isLive) return;
+    if (engine.isPaused) music.pause();
+    else if (music.currentTrack && !music.isPlaying) music.resume();
+    // intentionally ignore music.* identity changes; only react to pause flag
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [engine.isPaused, isLive]);
 
   const [startedAt, setStartedAt] = useState<number | null>(null);
   useEffect(() => {
@@ -237,6 +261,39 @@ export default function PlayWorkoutPage({ params }: Props) {
 
         {isLive && (
           <div className="space-y-4">
+            {tracks.length > 0 && music.currentTrack && (
+              <div className="flex items-center gap-2 rounded-md bg-white/10 px-3 py-2 text-xs">
+                <Music className="size-4 shrink-0" />
+                <div className="flex-1 min-w-0 truncate">
+                  <span className="font-medium">{music.currentTrack.name}</span>
+                  {music.currentTrack.artist && (
+                    <span className="text-white/70"> · {music.currentTrack.artist}</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => (music.isPlaying ? music.pause() : music.resume())}
+                  className="rounded p-1 hover:bg-white/15"
+                  aria-label={music.isPlaying ? "暫停音樂" : "播放音樂"}
+                >
+                  {music.isPlaying ? (
+                    <Pause className="size-4" />
+                  ) : (
+                    <Play className="size-4" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={music.next}
+                  className="rounded p-1 hover:bg-white/15"
+                  aria-label="下一首"
+                  disabled={tracks.length < 2}
+                >
+                  <SkipForward className="size-4" />
+                </button>
+              </div>
+            )}
+
             <div className="h-1.5 w-full rounded-full bg-white/20 overflow-hidden">
               <div
                 className="h-full bg-white transition-all"

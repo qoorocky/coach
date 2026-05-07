@@ -1,10 +1,11 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import type { Exercise, Workout } from "@coach/shared-types";
+import type { Exercise, MusicTrack, Workout } from "@coach/shared-types";
 import type { StoredSession } from "./sessions/types";
 
 interface CoachDB extends DBSchema {
   exercises: { key: string; value: Exercise };
   workouts: { key: string; value: Workout };
+  music: { key: string; value: MusicTrack };
   meta: { key: string; value: { key: string; value: unknown } };
   sessions: {
     key: string;
@@ -17,7 +18,7 @@ let dbPromise: Promise<IDBPDatabase<CoachDB>> | null = null;
 
 export function db(): Promise<IDBPDatabase<CoachDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<CoachDB>("coach", 2, {
+    dbPromise = openDB<CoachDB>("coach", 3, {
       upgrade(d, oldVersion) {
         if (oldVersion < 1) {
           d.createObjectStore("exercises", { keyPath: "id" });
@@ -27,6 +28,9 @@ export function db(): Promise<IDBPDatabase<CoachDB>> {
         if (oldVersion < 2) {
           const store = d.createObjectStore("sessions", { keyPath: "sessionId" });
           store.createIndex("by-startedAt", "startedAt");
+        }
+        if (oldVersion < 3) {
+          d.createObjectStore("music", { keyPath: "id" });
         }
       },
     });
@@ -75,6 +79,23 @@ export async function getExercisesByIds(ids: string[]): Promise<Map<string, Exer
       if (ex) out.set(id, ex);
     }),
   );
+  await tx.done;
+  return out;
+}
+
+export async function listMusic(): Promise<MusicTrack[]> {
+  const d = await db();
+  return d.getAll("music");
+}
+
+export async function getTracksByIds(ids: string[]): Promise<MusicTrack[]> {
+  const d = await db();
+  const tx = d.transaction("music", "readonly");
+  const out: MusicTrack[] = [];
+  for (const id of ids) {
+    const t = await tx.store.get(id);
+    if (t) out.push(t);
+  }
   await tx.done;
   return out;
 }

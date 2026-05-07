@@ -1,5 +1,5 @@
 import type { Exercise } from './exercise';
-import type { Workout } from './workout';
+import type { MusicTrack, Workout } from './workout';
 
 export interface SyncRequest {
   since: number;
@@ -13,6 +13,10 @@ export interface SyncResponse {
   };
   workouts: {
     updated: Workout[];
+    deleted: string[];
+  };
+  music: {
+    updated: MusicTrack[];
     deleted: string[];
   };
   hasMore: boolean;
