@@ -1,42 +1,93 @@
 @import "tailwindcss";
 
+/* ── Power theme (from design/Fitness App.html, A — Power · sharp · vivid · glass) ── */
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.18 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --border: oklch(0.92 0 0);
-  --primary: oklch(0.21 0 0);
-  --primary-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.55 0.22 27);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.12 0 0);
-    --foreground: oklch(0.95 0 0);
-    --card: oklch(0.15 0 0);
-    --card-foreground: oklch(0.95 0 0);
-    --muted: oklch(0.18 0 0);
-    --muted-foreground: oklch(0.65 0 0);
-    --border: oklch(0.22 0 0);
-    --primary: oklch(0.95 0 0);
-    --primary-foreground: oklch(0.18 0 0);
-    --destructive: oklch(0.65 0.22 27);
-  }
+  --background: #0a0a0b;
+  --foreground: #ffffff;
+  --surface: #141416;
+  --card: #1c1c1f;
+  --card-foreground: #ffffff;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --sub: #a1a1aa;
+  --dim: #52525b;
+  --border: #2a2a2e;
+  --pill: #27272a;
+  --nav-bg: #111113;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
+  --primary-strong: #ea580c;
+  --primary-dim: rgba(249, 115, 22, 0.15);
+  --primary-grad: linear-gradient(135deg, #f97316, #ea580c);
+  --destructive: #ef4444;
+  --hero-grad: linear-gradient(
+    to top,
+    #0a0a0b 0%,
+    rgba(10, 10, 11, 0.6) 50%,
+    transparent 100%
+  );
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-sub: var(--sub);
+  --color-dim: var(--dim);
   --color-border: var(--border);
+  --color-pill: var(--pill);
+  --color-nav: var(--nav-bg);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
   --color-destructive: var(--destructive);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: dark;
+}
+
+/* Glass card surface — design's `surface: glass` */
+.glass {
+  background: rgba(28, 28, 31, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Difficulty / level badges — colors from LEVEL_STYLE in the design */
+.badge-level-beginner {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-level-intermediate {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.badge-level-advanced {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Primary gradient pill / CTA */
+.btn-primary {
+  background: var(--primary-grad);
+  color: var(--primary-foreground);
+  font-weight: 700;
+}
+
+/* Reserve room for the fixed bottom nav so content does not hide behind it */
+.has-bottom-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
 }

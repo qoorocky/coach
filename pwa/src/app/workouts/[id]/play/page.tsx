@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Music, Pause, Play, SkipForward, Square } from "lucide-react";
+import type { Workout } from "@coach/shared-types";
 
 import { useExercisesByIds, useTracksByIds, useWorkout } from "@/lib/queries/content";
 import { useWorkoutEngine, type Phase } from "@/lib/engine/useWorkoutEngine";
@@ -30,19 +31,53 @@ function phaseTone(p: Phase): { bg: string; label: string } {
   return { bg: "bg-zinc-800", label: "待開始" };
 }
 
+// Outer: only does query + guards. No engine hook here, so workout being
+// undefined during the loading state can never reach `useWorkoutEngine`.
 export default function PlayWorkoutPage({ params }: Props) {
   const { id } = use(params);
-  const router = useRouter();
   const { data: workout, isPending } = useWorkout(id);
-  const exerciseIds = workout?.segments.map((s) => s.exerciseId) ?? [];
+
+  if (isPending) {
+    return (
+      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
+        <div className="h-6 w-24 rounded bg-muted animate-pulse" />
+        <div className="h-64 rounded-lg bg-muted animate-pulse" />
+      </main>
+    );
+  }
+
+  if (!workout) {
+    return (
+      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
+        <Link
+          href="/workouts"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          回列表
+        </Link>
+        <h1 className="text-xl font-semibold">找不到課程</h1>
+      </main>
+    );
+  }
+
+  return <PlayInner workout={workout} />;
+}
+
+// Inner: workout is guaranteed non-null. Engine + all effects live here so
+// they obey the rules of hooks (called unconditionally on every render of this
+// component, which only mounts once the workout exists).
+function PlayInner({ workout }: { workout: Workout }) {
+  const router = useRouter();
+  const exerciseIds = workout.segments.map((s) => s.exerciseId);
   const { data: exerciseMap } = useExercisesByIds(exerciseIds);
 
-  const engine = useWorkoutEngine(workout!, exerciseMap);
+  const engine = useWorkoutEngine(workout, exerciseMap);
   const isLive =
     engine.phase.kind !== "idle" && engine.phase.kind !== "done";
   useWakeLock(isLive && !engine.isPaused);
 
-  const trackIds = workout?.trackIds ?? [];
+  const trackIds = workout.trackIds;
   const { data: tracks = [] } = useTracksByIds(trackIds);
   const music = useMusicPlayer(tracks);
 
@@ -81,7 +116,6 @@ export default function PlayWorkoutPage({ params }: Props) {
     if (
       engine.phase.kind === "done" &&
       !savedRef.current &&
-      workout &&
       startedAt !== null
     ) {
       savedRef.current = true;
@@ -99,30 +133,6 @@ export default function PlayWorkoutPage({ params }: Props) {
       });
     }
   }, [engine.phase.kind, workout, startedAt, engine.totalElapsedMs, saveSession]);
-
-  if (isPending) {
-    return (
-      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
-        <div className="h-6 w-24 rounded bg-muted animate-pulse" />
-        <div className="h-64 rounded-lg bg-muted animate-pulse" />
-      </main>
-    );
-  }
-
-  if (!workout) {
-    return (
-      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
-        <Link
-          href="/workouts"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4" />
-          回列表
-        </Link>
-        <h1 className="text-xl font-semibold">找不到課程</h1>
-      </main>
-    );
-  }
 
   const tone = phaseTone(engine.phase);
   const remainingMs =
@@ -148,7 +158,7 @@ export default function PlayWorkoutPage({ params }: Props) {
                 return;
               }
               engine.stop();
-              router.push(`/workouts/${id}`);
+              router.push(`/workouts/${workout.id}`);
             }}
             className="inline-flex items-center gap-1 text-sm text-white/85 hover:text-white"
           >
@@ -169,7 +179,8 @@ export default function PlayWorkoutPage({ params }: Props) {
               <button
                 type="button"
                 onClick={engine.start}
-                className="rounded-full bg-white text-black font-semibold text-lg px-10 py-4 shadow"
+                className="rounded-full text-white font-bold text-lg px-12 py-4 shadow-lg"
+                style={{ background: "var(--primary-grad)" }}
               >
                 開始
               </button>
@@ -250,8 +261,9 @@ export default function PlayWorkoutPage({ params }: Props) {
               </p>
               <button
                 type="button"
-                onClick={() => router.push(`/workouts/${id}`)}
-                className="rounded-full bg-white text-black font-semibold text-base px-8 py-3"
+                onClick={() => router.push(`/workouts/${workout.id}`)}
+                className="rounded-full text-white font-bold text-base px-10 py-3 shadow-lg"
+                style={{ background: "var(--primary-grad)" }}
               >
                 返回課程
               </button>
@@ -318,7 +330,7 @@ export default function PlayWorkoutPage({ params }: Props) {
                 onClick={() => {
                   if (confirm("確定結束此次訓練？")) {
                     engine.stop();
-                    router.push(`/workouts/${id}`);
+                    router.push(`/workouts/${workout.id}`);
                   }
                 }}
                 label="結束"

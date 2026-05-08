@@ -13,6 +13,12 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   advanced: "高級",
 };
 
+const DIFFICULTY_BADGE: Record<string, string> = {
+  beginner: "badge-level-beginner",
+  intermediate: "badge-level-intermediate",
+  advanced: "badge-level-advanced",
+};
+
 function formatDateTime(ts: number): string {
   const d = new Date(ts);
   return d.toLocaleString("zh-Hant");
@@ -37,19 +43,19 @@ export default function SessionDetailPage({ params }: Props) {
 
   if (isPending) {
     return (
-      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
+      <main className="mx-auto max-w-md px-5 py-6 space-y-3">
         <div className="h-6 w-24 rounded bg-muted animate-pulse" />
-        <div className="h-32 rounded-lg bg-muted animate-pulse" />
+        <div className="h-32 rounded bg-muted animate-pulse" />
       </main>
     );
   }
 
   if (!session) {
     return (
-      <main className="mx-auto max-w-md px-4 py-6 space-y-3">
+      <main className="mx-auto max-w-md px-5 py-6 space-y-3">
         <Link
           href="/history"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1 text-sm text-sub hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
           回紀錄
@@ -60,53 +66,65 @@ export default function SessionDetailPage({ params }: Props) {
   }
 
   const w = session.workoutSnapshot;
+  const badgeClass = DIFFICULTY_BADGE[w.difficulty] ?? "";
 
   return (
-    <main className="mx-auto max-w-md px-4 py-6 space-y-5">
+    <main className="mx-auto max-w-md px-5 pt-6 pb-10 space-y-5">
       <Link
         href="/history"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1 text-sm text-sub hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
         回紀錄
       </Link>
 
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold">{w.name}</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{DIFFICULTY_LABEL[w.difficulty] ?? w.difficulty}</span>
-          <span>·</span>
-          <span>{w.segments.length} segments</span>
+      <header className="space-y-2">
+        <h1 className="text-2xl font-bold">{w.name}</h1>
+        <div className="flex items-center gap-2 text-sm">
+          <span
+            className={`${badgeClass} text-[11px] px-2.5 py-[3px] rounded-full font-medium`}
+          >
+            {DIFFICULTY_LABEL[w.difficulty] ?? w.difficulty}
+          </span>
+          <span className="text-sub">·</span>
+          <span className="text-sub">{w.segments.length} 段落</span>
         </div>
       </header>
 
-      <dl className="grid grid-cols-2 gap-4 rounded-lg border bg-card p-4 text-sm">
+      <dl className="grid grid-cols-2 gap-px rounded overflow-hidden bg-border">
         <Stat label="開始時間" value={formatDateTime(session.startedAt)} />
         <Stat
           label="結束時間"
           value={session.endedAt ? formatDateTime(session.endedAt) : "—"}
         />
-        <Stat label="實際時長" value={formatMmSs(session.totalElapsedMs)} />
+        <Stat label="實際時長" value={formatMmSs(session.totalElapsedMs)} accent />
         <Stat
           label="狀態"
           value={session.wasCompleted ? "完成" : "中斷"}
+          accent
         />
       </dl>
 
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          當時的 segments ({w.segments.length})
+      <section className="space-y-2.5">
+        <h2 className="text-xs font-medium text-dim">
+          當時的段落 ({w.segments.length})
         </h2>
-        <ol className="space-y-2">
+        <ol className="space-y-2.5">
           {w.segments.map((s, i) => (
             <li
               key={s.segmentId}
-              className="flex items-center gap-3 rounded-lg border bg-card p-3"
+              className="glass rounded p-3.5 flex items-center gap-3.5"
             >
-              <span className="size-7 shrink-0 rounded-full bg-muted text-center text-xs leading-7 text-muted-foreground">
+              <span
+                className="size-7 shrink-0 rounded-full text-center text-xs leading-7 font-bold"
+                style={{
+                  background: "var(--primary-dim)",
+                  color: "var(--primary)",
+                }}
+              >
                 {i + 1}
               </span>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-sub">
                 {s.durationSec}s × {s.rounds} 回 · 休息 {s.restAfterSec}s
               </p>
             </li>
@@ -132,11 +150,27 @@ export default function SessionDetailPage({ params }: Props) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="space-y-0.5">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{value}</dd>
+    <div
+      className="px-4 py-3"
+      style={{ background: "var(--card)" }}
+    >
+      <dt className="text-[11px] text-dim mb-0.5">{label}</dt>
+      <dd
+        className="text-sm font-semibold"
+        style={accent ? { color: "var(--primary)" } : undefined}
+      >
+        {value}
+      </dd>
     </div>
   );
 }
