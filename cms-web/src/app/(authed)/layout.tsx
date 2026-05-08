@@ -62,13 +62,13 @@ export default function AuthedLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <header className="h-14 border-b flex items-center justify-end px-4 gap-2">
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-[60px] bg-white border-b border-border flex items-center justify-end px-7 gap-3 sticky top-0 z-10">
           <UserMenu />
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-8">{children}</main>
       </div>
     </div>
   );

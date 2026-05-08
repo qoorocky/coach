@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 import { useAuthStore } from "@/lib/auth/store";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -185,24 +184,34 @@ function RecentWorkouts() {
   );
 }
 
+function todayLabel() {
+  const d = new Date();
+  const date = d.toLocaleDateString("zh-Hant", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const weekday = d.toLocaleDateString("zh-Hant", { weekday: "long" });
+  return `${date} · ${weekday}`;
+}
+
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <div>
-        <h1 className="text-2xl font-semibold">儀表板</h1>
-        <p className="text-sm text-muted-foreground">內部 CMS — Phase 1 M2</p>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-sm">你好，{user?.name ?? "-"}</span>
-        <Badge variant="secondary">{user?.role ?? "-"}</Badge>
+        <h1 className="text-[24px] font-bold text-foreground tracking-tight">
+          儀表板
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {todayLabel()} · 你好，{user?.name ?? "管理員"}
+        </p>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">動作狀態</h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <h2 className="text-base font-semibold text-foreground">動作狀態</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {STATUSES.map((s) => (
             <ExerciseStatusCard key={s} status={s} />
           ))}
@@ -210,15 +219,15 @@ export default function DashboardPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">課程狀態</h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <h2 className="text-base font-semibold text-foreground">課程狀態</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {STATUSES.map((s) => (
             <WorkoutStatusCard key={s} status={s} />
           ))}
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-5 md:grid-cols-2">
         <RecentExercises />
         <RecentWorkouts />
       </section>
