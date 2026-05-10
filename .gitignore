@@ -9,6 +9,10 @@ out/
 .next/
 target/
 
+# Serwist-generated service worker artifacts (regenerated on build)
+pwa/public/sw.js
+pwa/public/swe-worker-*.js
+
 # IDE
 .vscode/
 .idea/
