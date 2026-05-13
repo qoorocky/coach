@@ -68,6 +68,13 @@ export default function SessionDetailPage({ params }: Props) {
   const w = session.workoutSnapshot;
   const badgeClass = DIFFICULTY_BADGE[w.difficulty] ?? "";
 
+  // Map completedSegments by segmentId for inline lookup against the workout snapshot.
+  const completedById = new Map(
+    (session.completedSegments ?? []).map((c) => [c.segmentId, c]),
+  );
+  const RATING_EMOJI = ["", "😣", "😐", "😊", "🤩"] as const;
+  const RATING_LABEL = ["", "勉強", "尚可", "不錯", "爽"] as const;
+
   return (
     <main className="mx-auto max-w-md px-5 pt-6 pb-10 space-y-5">
       <Link
@@ -109,6 +116,12 @@ export default function SessionDetailPage({ params }: Props) {
         {session.maxHeartRate != null && (
           <Stat label="最高心率" value={`${session.maxHeartRate} bpm`} accent />
         )}
+        {session.subjectiveRating != null && (
+          <Stat
+            label="主觀評分"
+            value={`${RATING_EMOJI[session.subjectiveRating]} ${RATING_LABEL[session.subjectiveRating]}`}
+          />
+        )}
       </dl>
 
       <section className="space-y-2.5">
@@ -116,25 +129,48 @@ export default function SessionDetailPage({ params }: Props) {
           當時的段落 ({w.segments.length})
         </h2>
         <ol className="space-y-2.5">
-          {w.segments.map((s, i) => (
-            <li
-              key={s.segmentId}
-              className="glass rounded p-3.5 flex items-center gap-3.5"
-            >
-              <span
-                className="size-7 shrink-0 rounded-full text-center text-xs leading-7 font-bold"
-                style={{
-                  background: "var(--primary-dim)",
-                  color: "var(--primary)",
-                }}
+          {w.segments.map((s, i) => {
+            const done = completedById.get(s.segmentId);
+            const plannedSec = s.durationSec * Math.max(1, s.rounds);
+            return (
+              <li
+                key={s.segmentId}
+                className="glass rounded p-3.5 flex items-center gap-3.5"
               >
-                {i + 1}
-              </span>
-              <p className="text-[11px] text-sub">
-                {s.durationSec}s × {s.rounds} 回 · 休息 {s.restAfterSec}s
-              </p>
-            </li>
-          ))}
+                <span
+                  className="size-7 shrink-0 rounded-full text-center text-xs leading-7 font-bold"
+                  style={{
+                    background: "var(--primary-dim)",
+                    color: "var(--primary)",
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-sub">
+                    計畫：{s.durationSec}s × {s.rounds} 回 · 休息 {s.restAfterSec}s
+                  </p>
+                  {done && (
+                    <p className="text-[11px] mt-0.5">
+                      <span className="text-dim">實際：</span>
+                      <span className="font-semibold tabular-nums">
+                        {formatMmSs(done.actualDurationMs)}
+                      </span>
+                      <span className="text-dim">
+                        {" "}
+                        / {formatMmSs(plannedSec * 1000)}
+                      </span>
+                      {done.wasSkipped && (
+                        <span className="ml-2 text-[10px] px-1.5 py-px rounded bg-amber-500/20 text-amber-400">
+                          有跳過
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </section>
 

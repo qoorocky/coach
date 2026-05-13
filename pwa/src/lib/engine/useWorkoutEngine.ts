@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
+  CompletedSegment,
   Exercise,
   Workout,
   WorkoutMode,
@@ -55,6 +56,14 @@ interface EngineApi {
   resume: () => void;
   skip: () => void;
   stop: () => void;
+  getCompletedSegments: () => CompletedSegment[];
+}
+
+interface CompletedAcc {
+  segmentId: string;
+  orderIndex: number;
+  actualMs: number;
+  skipped: boolean;
 }
 
 const TICK_MS = 100;
@@ -90,9 +99,12 @@ export function useWorkoutEngine(
   const phaseRef = useRef<Phase>(phase);
   const pausedRef = useRef(false);
   const stepIdxRef = useRef(0);
+  const stepsRef = useRef<Step[]>(steps);
+  const completedRef = useRef<Map<number, CompletedAcc>>(new Map());
   phaseRef.current = phase;
   pausedRef.current = isPaused;
   stepIdxRef.current = stepIdx;
+  stepsRef.current = steps;
 
   const totalRemainingMs = isAmrap
     ? Math.max(0, totalDurationMs - totalElapsedMs)
@@ -164,6 +176,36 @@ export function useWorkoutEngine(
     [steps, workout, exerciseMap, isAmrap],
   );
 
+  const recordStepExit = useCallback(
+    (skipped: boolean) => {
+      const cur = phaseRef.current;
+      // Only WORK steps count toward completedSegments; rest is implicit
+      // between rounds and isn't a discrete spec'd unit.
+      if (cur.kind !== "work") return;
+      const seg = workout.segments[cur.segIdx];
+      if (!seg) return;
+      const step = isAmrap
+        ? amrapStepAt(workout, stepIdxRef.current)
+        : stepsRef.current[stepIdxRef.current];
+      if (!step) return;
+      const elapsed = Math.max(0, step.durationMs - cur.remainingMs);
+      const map = completedRef.current;
+      const existing = map.get(cur.segIdx);
+      if (existing) {
+        existing.actualMs += elapsed;
+        if (skipped) existing.skipped = true;
+      } else {
+        map.set(cur.segIdx, {
+          segmentId: seg.segmentId,
+          orderIndex: seg.orderIndex,
+          actualMs: elapsed,
+          skipped,
+        });
+      }
+    },
+    [workout, isAmrap],
+  );
+
   const advance = useCallback(() => {
     const next = stepIdxRef.current + 1;
     if (isAmrap && totalElapsedMs >= totalDurationMs) {
@@ -188,6 +230,7 @@ export function useWorkoutEngine(
       if (isAmrap && cur.kind !== "prepare") {
         const newElapsed = totalElapsedMs + TICK_MS;
         if (newElapsed >= totalDurationMs) {
+          recordStepExit(false);
           setTotalElapsedMs(totalDurationMs);
           setPhase({ kind: "done" });
           beepDone();
@@ -211,15 +254,17 @@ export function useWorkoutEngine(
         enterStep(0);
         return;
       }
+      recordStepExit(false);
       advance();
     }, TICK_MS);
     return () => clearInterval(id);
-  }, [phase.kind, isAmrap, totalDurationMs, totalElapsedMs, enterStep, advance]);
+  }, [phase.kind, isAmrap, totalDurationMs, totalElapsedMs, enterStep, advance, recordStepExit]);
 
   const start = useCallback(() => {
     unlockAudio();
     setStepIdx(0);
     setTotalElapsedMs(0);
+    completedRef.current.clear();
     const prepareMs = getCurrentSettings().prepareSec * 1000;
     if (prepareMs <= 0) {
       enterStep(0);
@@ -240,12 +285,13 @@ export function useWorkoutEngine(
   }, []);
 
   const stop = useCallback(() => {
+    recordStepExit(true);
     cancelSpeech();
     setIsPaused(false);
     setStepIdx(0);
     setPhase({ kind: "idle" });
     setTotalElapsedMs(0);
-  }, []);
+  }, [recordStepExit]);
 
   const skip = useCallback(() => {
     const cur = phaseRef.current;
@@ -254,9 +300,21 @@ export function useWorkoutEngine(
       return;
     }
     if (cur.kind === "work" || cur.kind === "rest") {
+      if (cur.kind === "work") recordStepExit(true);
       advance();
     }
-  }, [enterStep, advance]);
+  }, [enterStep, advance, recordStepExit]);
+
+  const getCompletedSegments = useCallback((): CompletedSegment[] => {
+    return Array.from(completedRef.current.values())
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map(({ segmentId, orderIndex, actualMs, skipped }) => ({
+        segmentId,
+        orderIndex,
+        actualDurationMs: actualMs,
+        wasSkipped: skipped,
+      }));
+  }, []);
 
   return {
     phase,
@@ -275,6 +333,7 @@ export function useWorkoutEngine(
     resume,
     skip,
     stop,
+    getCompletedSegments,
   };
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -140,12 +140,19 @@ function PlayInner({ workout }: { workout: Workout }) {
 
   const saveSession = useSaveSession();
   const savedRef = useRef(false);
+  const [rating, setRating] = useState<1 | 2 | 3 | 4 | null>(null);
+
+  // Reset rating + savedRef whenever a fresh run begins.
   useEffect(() => {
-    if (
-      engine.phase.kind === "done" &&
-      !savedRef.current &&
-      startedAt !== null
-    ) {
+    if (engine.phase.kind === "prepare") {
+      savedRef.current = false;
+      setRating(null);
+    }
+  }, [engine.phase.kind]);
+
+  const finishAndSave = useCallback(
+    (chosenRating: 1 | 2 | 3 | 4 | null) => {
+      if (savedRef.current || startedAt === null) return;
       savedRef.current = true;
       const now = Date.now();
       const samples = hr.samples.slice();
@@ -155,16 +162,18 @@ function PlayInner({ workout }: { workout: Workout }) {
         workoutId: workout.id,
         startedAt,
         endedAt: now,
-        completedSegments: [],
+        completedSegments: engine.getCompletedSegments(),
         heartRateSamples: samples,
         avgHeartRate: avg,
         maxHeartRate: max,
         wasCompleted: true,
         totalElapsedMs: engine.totalElapsedMs,
         workoutSnapshot: workout,
+        ...(chosenRating != null ? { subjectiveRating: chosenRating } : {}),
       });
-    }
-  }, [engine.phase.kind, workout, startedAt, engine.totalElapsedMs, saveSession, hr.samples]);
+    },
+    [workout, startedAt, engine, hr.samples, saveSession],
+  );
 
   const tone = phaseTone(engine.phase);
   const remainingMs =
@@ -294,13 +303,48 @@ function PlayInner({ workout }: { workout: Workout }) {
               <p className="text-white/85">
                 總時間 {formatMmSs(engine.totalElapsedMs)}
               </p>
+              <div className="space-y-3 w-full max-w-xs">
+                <p className="text-sm text-white/85">這次感受如何？</p>
+                <div className="flex justify-between gap-2">
+                  {(
+                    [
+                      { value: 1, emoji: "😣", label: "勉強" },
+                      { value: 2, emoji: "😐", label: "尚可" },
+                      { value: 3, emoji: "😊", label: "不錯" },
+                      { value: 4, emoji: "🤩", label: "爽" },
+                    ] as const
+                  ).map(({ value, emoji, label }) => {
+                    const selected = rating === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setRating(value)}
+                        className={`flex flex-col items-center gap-1 flex-1 rounded-xl py-3 transition-all ${
+                          selected
+                            ? "bg-white/25 ring-2 ring-white scale-105"
+                            : "bg-white/10 hover:bg-white/15"
+                        }`}
+                        aria-pressed={selected}
+                        aria-label={label}
+                      >
+                        <span className="text-3xl">{emoji}</span>
+                        <span className="text-[10px] text-white/85">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => router.push(`/workouts/${workout.id}`)}
+                onClick={() => {
+                  finishAndSave(rating);
+                  router.push(`/workouts/${workout.id}`);
+                }}
                 className="rounded-full text-white font-bold text-base px-10 py-3 shadow-lg"
                 style={{ background: "var(--primary-grad)" }}
               >
-                返回課程
+                {rating != null ? "儲存並返回" : "略過評分並返回"}
               </button>
             </>
           )}
