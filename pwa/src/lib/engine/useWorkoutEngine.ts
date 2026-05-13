@@ -18,14 +18,16 @@ import {
 } from "./audio";
 import { cancelSpeech, speak } from "./speech";
 import { getCurrentSettings } from "../settings/store";
+import {
+  amrapStepAt,
+  amrapStepsLoop,
+  expandEmom,
+  expandStandard,
+  expandTabata,
+  type Step,
+} from "./steps";
 
-export interface Step {
-  kind: "work" | "rest";
-  durationMs: number;
-  segIdx: number;
-  roundIdx: number;
-  totalRoundsInSeg: number;
-}
+export type { Step } from "./steps";
 
 export type Phase =
   | { kind: "idle" }
@@ -67,10 +69,6 @@ interface CompletedAcc {
 }
 
 const TICK_MS = 100;
-const TABATA_WORK_MS = 20_000;
-const TABATA_REST_MS = 10_000;
-const TABATA_ROUNDS = 8;
-const EMOM_MINUTE_MS = 60_000;
 
 export function useWorkoutEngine(
   workout: Workout,
@@ -177,7 +175,7 @@ export function useWorkoutEngine(
   );
 
   const recordStepExit = useCallback(
-    (skipped: boolean) => {
+    (skipped: boolean, naturalCompletion = false) => {
       const cur = phaseRef.current;
       // Only WORK steps count toward completedSegments; rest is implicit
       // between rounds and isn't a discrete spec'd unit.
@@ -188,7 +186,12 @@ export function useWorkoutEngine(
         ? amrapStepAt(workout, stepIdxRef.current)
         : stepsRef.current[stepIdxRef.current];
       if (!step) return;
-      const elapsed = Math.max(0, step.durationMs - cur.remainingMs);
+      // On natural completion the tick that fires this still carries the
+      // pre-tick `remainingMs` (~TICK_MS), so subtracting would under-count
+      // every round by one tick. Treat naturally-completed steps as full.
+      const elapsed = naturalCompletion
+        ? step.durationMs
+        : Math.max(0, step.durationMs - cur.remainingMs);
       const map = completedRef.current;
       const existing = map.get(cur.segIdx);
       if (existing) {
@@ -230,6 +233,8 @@ export function useWorkoutEngine(
       if (isAmrap && cur.kind !== "prepare") {
         const newElapsed = totalElapsedMs + TICK_MS;
         if (newElapsed >= totalDurationMs) {
+          // AMRAP master-clock timeout cuts mid-step — record actual elapsed,
+          // not the full planned duration.
           recordStepExit(false);
           setTotalElapsedMs(totalDurationMs);
           setPhase({ kind: "done" });
@@ -254,7 +259,7 @@ export function useWorkoutEngine(
         enterStep(0);
         return;
       }
-      recordStepExit(false);
+      recordStepExit(false, true);
       advance();
     }, TICK_MS);
     return () => clearInterval(id);
@@ -337,87 +342,3 @@ export function useWorkoutEngine(
   };
 }
 
-function expandStandard(workout: Workout): Step[] {
-  const out: Step[] = [];
-  workout.segments.forEach((seg, segIdx) => {
-    const rounds = Math.max(1, seg.rounds);
-    for (let r = 0; r < rounds; r++) {
-      out.push({
-        kind: "work",
-        durationMs: seg.durationSec * 1000,
-        segIdx,
-        roundIdx: r,
-        totalRoundsInSeg: rounds,
-      });
-      if (seg.restAfterSec > 0) {
-        out.push({
-          kind: "rest",
-          durationMs: seg.restAfterSec * 1000,
-          segIdx,
-          roundIdx: r,
-          totalRoundsInSeg: rounds,
-        });
-      }
-    }
-  });
-  return out;
-}
-
-function expandTabata(workout: Workout): Step[] {
-  const out: Step[] = [];
-  workout.segments.forEach((_, segIdx) => {
-    for (let r = 0; r < TABATA_ROUNDS; r++) {
-      out.push({
-        kind: "work",
-        durationMs: TABATA_WORK_MS,
-        segIdx,
-        roundIdx: r,
-        totalRoundsInSeg: TABATA_ROUNDS,
-      });
-      out.push({
-        kind: "rest",
-        durationMs: TABATA_REST_MS,
-        segIdx,
-        roundIdx: r,
-        totalRoundsInSeg: TABATA_ROUNDS,
-      });
-    }
-  });
-  return out;
-}
-
-function expandEmom(workout: Workout): Step[] {
-  const out: Step[] = [];
-  workout.segments.forEach((seg, segIdx) => {
-    const rounds = Math.max(1, seg.rounds);
-    for (let r = 0; r < rounds; r++) {
-      out.push({
-        kind: "work",
-        durationMs: EMOM_MINUTE_MS,
-        segIdx,
-        roundIdx: r,
-        totalRoundsInSeg: rounds,
-      });
-    }
-  });
-  return out;
-}
-
-function amrapStepsLoop(_workout: Workout): Step[] {
-  // AMRAP doesn't use a fixed step list; engine queries amrapStepAt by index
-  return [];
-}
-
-function amrapStepAt(workout: Workout, idx: number): Step | null {
-  if (workout.segments.length === 0) return null;
-  const segIdx = idx % workout.segments.length;
-  const seg = workout.segments[segIdx];
-  if (!seg) return null;
-  return {
-    kind: "work",
-    durationMs: seg.durationSec * 1000,
-    segIdx,
-    roundIdx: 0,
-    totalRoundsInSeg: 1,
-  };
-}
