@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { BackLink } from "@/components/nav/BackLink";
 import { StatusBadge } from "@/components/lifecycle/StatusBadge";
 import { WorkoutLifecycleActions } from "@/components/lifecycle/WorkoutLifecycleActions";
+import { AuditTimeline } from "@/components/lifecycle/AuditTimeline";
 
 import { useWorkout } from "@/lib/queries/workouts";
 import { useExercises } from "@/lib/queries/exercises";
@@ -157,6 +158,8 @@ export default function WorkoutDetailPage({ params }: Props) {
           />
         </div>
       )}
+
+      <AuditTimeline entityType="WORKOUT" id={data.id} />
     </div>
   );
 }
