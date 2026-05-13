@@ -16,6 +16,7 @@ import {
   unlockAudio,
 } from "./audio";
 import { cancelSpeech, speak } from "./speech";
+import { getCurrentSettings } from "../settings/store";
 
 export interface Step {
   kind: "work" | "rest";
@@ -56,7 +57,6 @@ interface EngineApi {
   stop: () => void;
 }
 
-const PREPARE_MS = 5_000;
 const TICK_MS = 100;
 const TABATA_WORK_MS = 20_000;
 const TABATA_REST_MS = 10_000;
@@ -220,9 +220,14 @@ export function useWorkoutEngine(
     unlockAudio();
     setStepIdx(0);
     setTotalElapsedMs(0);
-    setPhase({ kind: "prepare", remainingMs: PREPARE_MS });
-    speak("準備開始");
-  }, []);
+    const prepareMs = getCurrentSettings().prepareSec * 1000;
+    if (prepareMs <= 0) {
+      enterStep(0);
+    } else {
+      setPhase({ kind: "prepare", remainingMs: prepareMs });
+      speak("準備開始");
+    }
+  }, [enterStep]);
 
   const pause = useCallback(() => {
     setIsPaused(true);

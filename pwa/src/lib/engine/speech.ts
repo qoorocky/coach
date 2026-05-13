@@ -1,3 +1,5 @@
+import { getCurrentSettings } from "../settings/store";
+
 type Listener = (speaking: boolean) => void;
 const listeners = new Set<Listener>();
 
@@ -13,6 +15,7 @@ export function onSpeechActive(listener: Listener): () => void {
 export function speak(text: string): void {
   if (typeof window === "undefined") return;
   if (!("speechSynthesis" in window)) return;
+  if (!getCurrentSettings().voiceEnabled) return;
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "zh-TW";
   u.rate = 1.05;

@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Dumbbell, History } from "lucide-react";
+import { Home, Dumbbell, History, Settings } from "lucide-react";
 
 // Bottom nav from design/Fitness App.html Screen() (line ~393).
-// We keep three real destinations rather than the design's five demo tabs.
+// We keep four real destinations rather than the design's five demo tabs.
 const NAV = [
   { href: "/", label: "首頁", Icon: Home, match: (p: string) => p === "/" },
   {
@@ -19,6 +19,12 @@ const NAV = [
     label: "紀錄",
     Icon: History,
     match: (p: string) => p.startsWith("/history"),
+  },
+  {
+    href: "/settings",
+    label: "設定",
+    Icon: Settings,
+    match: (p: string) => p.startsWith("/settings"),
   },
 ] as const;
 

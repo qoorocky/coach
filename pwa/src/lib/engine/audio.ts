@@ -1,3 +1,5 @@
+import { getCurrentSettings } from "../settings/store";
+
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext | null {
@@ -10,6 +12,10 @@ function getCtx(): AudioContext | null {
 }
 
 function tone(frequency: number, durationMs: number, gain = 0.18): void {
+  const settings = getCurrentSettings();
+  if (!settings.beepEnabled) return;
+  const scaledGain = gain * settings.beepVolume;
+  if (scaledGain <= 0) return;
   const c = getCtx();
   if (!c) return;
   if (c.state === "suspended") {
@@ -20,7 +26,7 @@ function tone(frequency: number, durationMs: number, gain = 0.18): void {
   osc.type = "sine";
   osc.frequency.value = frequency;
   g.gain.setValueAtTime(0, c.currentTime);
-  g.gain.linearRampToValueAtTime(gain, c.currentTime + 0.005);
+  g.gain.linearRampToValueAtTime(scaledGain, c.currentTime + 0.005);
   g.gain.linearRampToValueAtTime(0, c.currentTime + durationMs / 1000);
   osc.connect(g).connect(c.destination);
   osc.start();

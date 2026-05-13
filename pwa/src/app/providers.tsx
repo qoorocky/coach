@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { loadSettings } from "@/lib/settings/store";
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
     () =>
@@ -19,6 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    loadSettings().catch(() => undefined);
     if (
       process.env.NODE_ENV === "production" &&
       typeof window !== "undefined" &&
