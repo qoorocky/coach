@@ -103,6 +103,12 @@ export default function SessionDetailPage({ params }: Props) {
           value={session.wasCompleted ? "完成" : "中斷"}
           accent
         />
+        {session.avgHeartRate != null && (
+          <Stat label="平均心率" value={`${session.avgHeartRate} bpm`} />
+        )}
+        {session.maxHeartRate != null && (
+          <Stat label="最高心率" value={`${session.maxHeartRate} bpm`} accent />
+        )}
       </dl>
 
       <section className="space-y-2.5">

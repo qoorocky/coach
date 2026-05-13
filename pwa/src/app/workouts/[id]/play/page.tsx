@@ -3,13 +3,28 @@
 import Link from "next/link";
 import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Music, Pause, Play, SkipForward, Square } from "lucide-react";
+import {
+  ChevronLeft,
+  Heart,
+  HeartOff,
+  Music,
+  Pause,
+  Play,
+  SkipForward,
+  Square,
+} from "lucide-react";
 import type { Workout } from "@coach/shared-types";
 
 import { useExercisesByIds, useTracksByIds, useWorkout } from "@/lib/queries/content";
 import { useWorkoutEngine, type Phase } from "@/lib/engine/useWorkoutEngine";
 import { useWakeLock } from "@/lib/engine/wakeLock";
 import { useMusicPlayer } from "@/lib/engine/music";
+import {
+  bpmZone,
+  summariseHeartRate,
+  useHeartRateMonitor,
+  ZONE_STYLE,
+} from "@/lib/engine/heartRate";
 import { useSaveSession } from "@/lib/queries/sessions";
 
 interface Props {
@@ -77,6 +92,19 @@ function PlayInner({ workout }: { workout: Workout }) {
     engine.phase.kind !== "idle" && engine.phase.kind !== "done";
   useWakeLock(isLive && !engine.isPaused);
 
+  const hr = useHeartRateMonitor(isLive && !engine.isPaused);
+  // Drop the previous session's samples the moment a new run starts.
+  const hrPrepResetRef = useRef(false);
+  useEffect(() => {
+    if (engine.phase.kind === "prepare" && !hrPrepResetRef.current) {
+      hr.resetSamples();
+      hrPrepResetRef.current = true;
+    }
+    if (engine.phase.kind === "idle") {
+      hrPrepResetRef.current = false;
+    }
+  }, [engine.phase.kind, hr]);
+
   const trackIds = workout.trackIds;
   const { data: tracks = [] } = useTracksByIds(trackIds);
   const music = useMusicPlayer(tracks);
@@ -120,19 +148,23 @@ function PlayInner({ workout }: { workout: Workout }) {
     ) {
       savedRef.current = true;
       const now = Date.now();
+      const samples = hr.samples.slice();
+      const { avg, max } = summariseHeartRate(samples);
       saveSession.mutate({
         sessionId: crypto.randomUUID(),
         workoutId: workout.id,
         startedAt,
         endedAt: now,
         completedSegments: [],
-        heartRateSamples: [],
+        heartRateSamples: samples,
+        avgHeartRate: avg,
+        maxHeartRate: max,
         wasCompleted: true,
         totalElapsedMs: engine.totalElapsedMs,
         workoutSnapshot: workout,
       });
     }
-  }, [engine.phase.kind, workout, startedAt, engine.totalElapsedMs, saveSession]);
+  }, [engine.phase.kind, workout, startedAt, engine.totalElapsedMs, saveSession, hr.samples]);
 
   const tone = phaseTone(engine.phase);
   const remainingMs =
@@ -165,7 +197,10 @@ function PlayInner({ workout }: { workout: Workout }) {
             <ChevronLeft className="size-4" />
             結束
           </button>
-          <span className="text-xs text-white/85">{tone.label}</span>
+          <div className="flex items-center gap-2">
+            <HrPill hr={hr} />
+            <span className="text-xs text-white/85">{tone.label}</span>
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
@@ -363,6 +398,58 @@ function ControlButton({
     >
       {children}
       <span className="text-[10px] text-white/85">{label}</span>
+    </button>
+  );
+}
+
+function HrPill({
+  hr,
+}: {
+  hr: ReturnType<typeof useHeartRateMonitor>;
+}) {
+  if (!hr.isSupported) return null;
+
+  if (hr.status === "connected" && hr.bpm != null) {
+    const zone = bpmZone(hr.bpm);
+    const style = ZONE_STYLE[zone];
+    return (
+      <button
+        type="button"
+        onClick={hr.disconnect}
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-2 ring-white/40"
+        style={{ background: `${style.color}33`, color: style.color }}
+        title={`${hr.deviceName ?? "心率帶"} — ${style.label}（點擊中斷）`}
+      >
+        <Heart className="size-3.5 fill-current" />
+        <span className="tabular-nums">{hr.bpm}</span>
+        <span className="text-[10px] opacity-80">{style.label.slice(0, 2)}</span>
+      </button>
+    );
+  }
+
+  if (hr.status === "connecting") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85">
+        <Heart className="size-3.5 animate-pulse" />
+        連線中…
+      </span>
+    );
+  }
+
+  // idle / error / connected-but-no-reading
+  return (
+    <button
+      type="button"
+      onClick={hr.connect}
+      className="inline-flex items-center gap-1.5 rounded-full bg-white/15 hover:bg-white/25 px-2.5 py-1 text-xs text-white/85"
+      title={hr.error ?? "連接心率帶"}
+    >
+      {hr.status === "error" ? (
+        <HeartOff className="size-3.5" />
+      ) : (
+        <Heart className="size-3.5" />
+      )}
+      連心率帶
     </button>
   );
 }
