@@ -8,14 +8,17 @@ import {
   ListChecks,
   Layers,
   Music,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/auth/store";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   matchPrefix?: string;
+  adminOnly?: boolean;
 }
 
 interface NavGroup {
@@ -39,6 +42,18 @@ const NAV: NavGroup[] = [
       { href: "/review", label: "待審核", icon: ListChecks, matchPrefix: "/review" },
     ],
   },
+  {
+    group: "管理",
+    items: [
+      {
+        href: "/users",
+        label: "帳號管理",
+        icon: Users,
+        matchPrefix: "/users",
+        adminOnly: true,
+      },
+    ],
+  },
 ];
 
 function LogoMark() {
@@ -54,6 +69,14 @@ function LogoMark() {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const role = useAuthStore((s) => s.user?.role);
+  const visibleGroups = NAV
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((item) => !item.adminOnly || role === "ADMIN"),
+    }))
+    .filter((g) => g.items.length > 0);
+
   return (
     <aside className="w-[230px] shrink-0 bg-sidebar text-sidebar-foreground flex flex-col h-screen sticky top-0">
       {/* Logo */}
@@ -73,7 +96,7 @@ export function Sidebar() {
 
       {/* Nav groups */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {NAV.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.group} className="mb-5">
             <p className="text-[10px] font-bold text-sidebar-foreground/70 tracking-[0.08em] px-2 mb-1.5">
               {group.group}
