@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Cancel an earlier run on the same ref when a new push lands —
+# we never need stale results once the branch moves forward.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cms-api:
+    name: cms-api (Java 17 / Maven)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: coach_cms
+          POSTGRES_USER: coach
+          POSTGRES_PASSWORD: coach_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U coach -d coach_cms"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: cms-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: mvn verify
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/coach_cms
+          SPRING_DATASOURCE_USERNAME: coach
+          SPRING_DATASOURCE_PASSWORD: coach_dev_password
+        run: ./mvnw -B -ntp verify
+
+  pnpm:
+    name: pnpm workspaces (typecheck / build / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+      - name: install (frozen, no scripts)
+        # Reproducible install + skip third-party lifecycle scripts to limit
+        # supply-chain risk in CI.
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: build shared-types
+        run: pnpm --filter @coach/shared-types build
+      - name: typecheck (all workspaces)
+        run: pnpm -r --parallel typecheck
+      - name: lint cms-web + pwa
+        run: |
+          pnpm --filter @coach/cms-web lint
+          pnpm --filter @coach/pwa lint
+      - name: pwa unit tests
+        run: pnpm --filter @coach/pwa test
+      - name: build cms-web
+        run: pnpm --filter @coach/cms-web build
+      - name: build pwa
+        run: pnpm --filter @coach/pwa build
+
+  docker:
+    name: cms-api Docker image
+    runs-on: ubuntu-latest
+    needs: cms-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: build cms-api image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cms-api
+          file: ./cms-api/Dockerfile
+          push: false
+          tags: coach/cms-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
