@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 import withSerwistInit from "@serwist/next";
 
 const withSerwist = withSerwistInit({
@@ -11,6 +12,8 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  output: "standalone",
+  outputFileTracingRoot: path.join(__dirname, ".."),
 };
 
 export default withSerwist(nextConfig);

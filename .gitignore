@@ -77,3 +77,11 @@ coverage/
 
 # Spec (kept locally, not committed)
 spec.md
+
+# NAS deploy artefacts (kept locally, not committed)
+docker-compose.nas.yml
+.env.nas.example
+**/Dockerfile.nas
+docs/nas-deploy.md
+coach-nas.tar
+*-nas.tar
